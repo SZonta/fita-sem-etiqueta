@@ -1,0 +1,8 @@
+# Godot: import cache and C# build output (game/.godot/mono/temp)
+.godot/
+
+# .NET
+bin/
+obj/
+.vs/
+*.user

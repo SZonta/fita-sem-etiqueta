@@ -26,13 +26,13 @@ Etapa 2 do projeto. Status: **aprovado pelo dono em 2026-11-11**, com um ajuste 
 
 ### Ferramentas a instalar na Etapa 3
 
-Nada foi instalado. Cada item exige autorização explícita do dono no momento da instalação, com tamanho confirmado na fonte.
+Cada item exige autorização explícita do dono no momento da instalação, com tamanho confirmado na fonte. Os três primeiros foram instalados na entrega 1 (2026-11-11).
 
 | Ferramenta | Origem oficial | Para quê | Tamanho |
 |---|---|---|---|
-| Godot 4.7.x, edição .NET | godotengine.org | Motor do jogo | A confirmar |
-| .NET SDK (LTS atual) | dotnet.microsoft.com | Compilar o C# | A confirmar |
-| Extensão C# para VS Code | Marketplace do VS Code (Microsoft) | Autocompletar e depurar | A confirmar |
+| Godot 4.7.2, edição .NET (instalado) | godotengine.org | Motor do jogo | 111 MB |
+| .NET SDK 10.0.404, LTS (instalado) | dotnet.microsoft.com | Compilar o C# | 208 MB |
+| Extensão C# 2.160.4 para VS Code (instalada) | Marketplace do VS Code (Microsoft) | Autocompletar e depurar | 130 MB |
 | Blender (LTS atual) | blender.org | Modelos, rig, animação. Já inclui o Python usado pelos scripts | A confirmar |
 | MPFB (complemento do Blender) | makehumancommunity.org | Malha base dos humanos | A confirmar, junto com a licença |
 | Audacity | audacityteam.org | Cortar e tratar os sons baixados; gravar os "ruídos de fala" | A confirmar |
@@ -116,7 +116,32 @@ Organização por funcionalidade, como pastas de feature em um projeto Next.js, 
 - Alvo: 60 quadros por segundo na RTX 3050 de 4 GB do dono, com folga para PCs mais fracos.
 - **Resolução interna baixa (em torno de 480 linhas), ampliada para a tela.** É fiel ao VHS e reduz muito o custo de vídeo. É também o que torna o "semi-realista" viável: a baixa resolução e o filtro escondem a simplicidade dos modelos.
 - Filtro VHS como pós-processamento único, com intensidade ajustável no menu.
-- Renderizador e motor de física: decididos e registrados na primeira entrega técnica, depois de medir na máquina do dono.
+- Renderizador e motor de física: decididos na entrega 1 (2026-11-11), depois de medir na máquina do dono. Ver abaixo.
+
+### Decisão da entrega 1: renderizador, física e versão do .NET
+
+Medido na RTX 3050 Laptop do dono, com Godot 4.7.2, sala cinza de teste, 1920x1080, V-Sync desligado.
+
+| Renderizador | Driver | Quadros por segundo |
+|---|---|---|
+| **Forward+ (escolhido)** | Vulkan | cerca de 495 |
+| Forward+ | Direct3D 12 | cerca de 590 |
+| Mobile | Vulkan | cerca de 850 |
+| Compatibility | OpenGL 3.3 | cerca de 2440 |
+
+- **Renderizador: Forward+.** Todos passam de 8 vezes a meta de 60 quadros por segundo, então a escolha é por recurso, não por velocidade. Só o Forward+ tem neblina volumétrica e não limita a quantidade de luzes por objeto, e a noite 3 (chuva, postes, rua molhada) precisa disso. A resolução interna baixa (entrega 2) reduz ainda mais o custo.
+- **Driver: o padrão do motor (Vulkan).** O Direct3D 12 mediu 19% a mais, mas numa sala vazia. Reavaliar quando existir uma cena de verdade (entrega 5).
+- **Física: Jolt Physics** (embutido no Godot, `physics/3d/physics_engine`). Teste descartável com 400 cilindros do tamanho de uma lata caindo num piso fino:
+
+| Motor | Tempo médio de física por quadro | Latas que atravessaram o piso | Latas ainda tremendo após 8 s |
+|---|---|---|---|
+| Godot Physics | 2,4 ms | 217 de 400 | 179 |
+| **Jolt (escolhido)** | 1,9 ms | 101 de 400 | 42 |
+
+  Nenhum dos dois segura objeto pequeno e rápido sem detecção contínua de colisão. Na entrega 3, a lata precisa de `continuous_cd` ligado.
+- **Versão do .NET: `net10.0`**, e não o `net8.0` que o Godot gera por padrão. Motivos: o suporte ao .NET 8 terminou em 2026-11-10; o SDK 10 (LTS até novembro de 2028) já traz o que o `net10.0` precisa, e o `net8.0` exigiria baixar um pacote extra. Editor e jogo carregaram sem erro. **A validar na entrega 19:** exportação para Windows com `net10.0`.
+- **A GPU usada é a NVIDIA**, não a Intel integrada do notebook (conferido no log do Godot).
+- Limite da medição: uma sala cinza não tem textura, personagem nem filtro. Os números provam folga, não o desempenho final.
 
 ## 5. Qualidade
 
