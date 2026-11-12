@@ -227,7 +227,7 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
   - Trocar de fase com o menu aberto deixaria a árvore pausada sem menu. Tratar junto com o `LevelLoader`.
   - O jogo não pausa ao perder o foco da janela. Passa a importar quando houver ameaça (entrega 9).
 - **`settings.cfg` sem validação:** valores editados à mão fora da faixa entram como estão (por exemplo, sensibilidade 0). Mexer no controle corrige. Não tratado de propósito: só acontece editando o arquivo.
-- **Padrão do filtro:** o código usa 0,7. No último teste o dono deixou em 0,3 e a sensibilidade em 0,8. Perguntar se o padrão deve mudar.
+- **Padrão do filtro: 0,7, decidido pelo dono em 2026-11-11.** No teste ele deixou o próprio controle em 0,3 e a sensibilidade em 0,8, mas escolheu manter o padrão do jogo. Não perguntar de novo.
 - **Cenas sem `uid`:** `player.tscn`, `test_room.tscn`, `vhs_filter.tscn` e `pause_menu.tscn` foram escritas à mão. Na primeira vez que o editor salvar, ele reescreve o cabeçalho; esse diff é esperado.
 - **`docs/credits.md`** ainda não existe. Criar junto com o primeiro item de terceiros.
 - **Driver de vídeo:** o Direct3D 12 mediu 19% a mais que o Vulkan na sala vazia. Reavaliar na entrega 5, com uma cena de verdade.
