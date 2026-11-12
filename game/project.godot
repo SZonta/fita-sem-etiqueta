@@ -14,6 +14,17 @@ config/name="Fita Sem Etiqueta"
 run/main_scene="res://levels/test_room/test_room.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
+[autoload]
+
+Settings="*res://core/Settings.cs"
+
+[display]
+
+window/size/viewport_width=1280
+window/size/viewport_height=720
+window/stretch/mode="canvas_items"
+window/stretch/aspect="expand"
+
 [dotnet]
 
 project/assembly_name="FitaSemEtiqueta"
@@ -41,6 +52,11 @@ move_right={
 ]
 }
 
+[internationalization]
+
+locale/translations=PackedStringArray("res://localization/ui.en.translation", "res://localization/ui.es.translation", "res://localization/ui.pt.translation")
+
 [physics]
 
 3d/physics_engine="Jolt Physics"
+common/physics_interpolation=true

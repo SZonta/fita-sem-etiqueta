@@ -143,6 +143,26 @@ Medido na RTX 3050 Laptop do dono, com Godot 4.7.2, sala cinza de teste, 1920x10
 - **A GPU usada é a NVIDIA**, não a Intel integrada do notebook (conferido no log do Godot).
 - Limite da medição: uma sala cinza não tem textura, personagem nem filtro. Os números provam folga, não o desempenho final.
 
+### Decisão da entrega 2: resolução interna, filtro VHS e interpolação
+
+Medido em 2026-11-11 na mesma máquina, sala cinza de teste, tela cheia 1920x1080, V-Sync desligado.
+
+| Configuração | Quadros por segundo |
+|---|---|
+| Entrega 1: 3D a 1080 linhas, sem filtro | cerca de 495 |
+| Entrega 2: 3D a 480 linhas, primeira versão do filtro (recusada; 10 leituras da imagem por pixel) | cerca de 780 (de 763 a 818) |
+| **Entrega 2: 3D a 480 linhas, filtro VHS aprovado (21 leituras por pixel)** | cerca de 595 (de 575 a 641) |
+
+- **Resolução interna:** só o 3D é reduzido, pela escala 3D do viewport (`Scaling3DScale` = 480 / altura da janela, ampliação bilinear). Menus e textos continuam na resolução da janela. Alternativas descartadas: o modo de esticamento `viewport` (amplia sem suavização e deixaria também o texto em 480 linhas) e um `SubViewport` (mais peças: encaminhamento de entrada e troca de fases dentro dele).
+- **Limite:** o código não deixa a escala 3D passar abaixo de 0,25, o mínimo oferecido nas configurações de projeto. Em janela com mais de 1920 pixels de altura (4K), o 3D fica com 1/4 da altura (540 linhas em 2160), e não 480. **Não conferido:** o limite real do motor pode ser 0,1; se for, o piso pode cair e o 4K teria 480 linhas.
+- **Intensidade na medição:** a medição do filtro aprovado usou a intensidade que estava salva no `settings.cfg` do dono naquele momento, não registrada. O shader faz as mesmas 21 leituras em qualquer intensidade, então o custo é o mesmo.
+- **Filtro VHS:** um único shader de tela cheia (`game/vfx/vhs_filter.gdshader`) desenhado por cima da imagem pronta. Aparência de câmera antiga, sem nada que pisque ou corra pela tela: ondulação lenta, desvio fixo nas últimas linhas, contorno duro nas bordas, cor larga que borra para a direita e vaza das linhas de cima, granulação, pretos lavados e cor forte. A intensidade (0 a 1) multiplica todos os efeitos; em 0 a imagem passa intacta.
+- **Como o filtro foi escolhido:** a primeira versão (tremor aleatório por linha, faixa de tracking permanente) foi recusada pelo dono. Cinco opções foram comparadas numa página de teste descartável, sobre uma cena colorida; o dono aprovou a mistura da "fita limpa" (sem faixa, sem riscos, sem piscadas) com a "fita gasta" (imagem de câmera antiga). Regra que fica: defeitos que piscam ou atravessam a tela ficam fora do filtro geral. Eles podem voltar nas fitas assistidas na TV (entrega 6).
+- **O menu de pausa fica acima do filtro**, para continuar legível com a intensidade no máximo.
+- **Interface:** esticamento `canvas_items` com base 1280x720, para menus e legendas manterem o tamanho relativo em qualquer janela.
+- **Interpolação de física ligada** (`physics/common/physics_interpolation`). O corpo do jogador anda a 60 ticks por segundo e o motor suaviza entre eles. A cabeça (câmera) é destacada do corpo (`top_level`, sem interpolação) e posicionada a cada quadro: posição do corpo interpolada, rotação direto do mouse. É o padrão de câmera em primeira pessoa da documentação do Godot. A tela do dono é de 120 Hz ou mais, então sem isso o movimento tremeria.
+- Limite da medição: a sala continua sem textura e sem personagem. O ganho sobre a entrega 1 vem da resolução menor. O filtro aprovado custa cerca de 0,4 ms por quadro a 1080p (diferença entre 780 e 595 quadros por segundo), contra os 16,7 ms disponíveis a 60 quadros por segundo.
+
 ## 5. Qualidade
 
 - Lógica de história coberta por testes xUnit (cada final, cada condição).
