@@ -4,3 +4,5 @@ PAUSE_RESUME,Continuar,Resume,Continuar
 SETTINGS_VHS_INTENSITY,Filtro VHS,VHS filter,Filtro VHS
 SETTINGS_MOUSE_SENSITIVITY,Sensibilidade do mouse,Mouse sensitivity,Sensibilidad del ratón
 SETTINGS_VOLUME,Volume,Volume,Volumen
+INTERACT_PICK_UP,[E] Pegar,[E] Pick up,[E] Recoger
+INTERACT_DROP,[E] Soltar,[E] Drop,[E] Soltar

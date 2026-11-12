@@ -3,19 +3,20 @@
 Fonte de verdade do projeto **Fita Sem Etiqueta**. Qualquer sessão nova começa lendo este arquivo.
 Atualizar SEMPRE antes de cada commit.
 
-Última atualização: 2026-11-11 (fim da Entrega 2 da Etapa 3).
+Última atualização: 2026-11-12 (fim da Entrega 3 da Etapa 3).
 
 ## 1. Estado atual
 
 - **Etapa 1 (Pesquisa sobre Fears to Fathom):** concluída e aprovada em 2026-11-11.
 - **Etapa 2 (Planejamento):** concluída e aprovada em 2026-11-11.
-- **Etapa 3 (Desenvolvimento):** em andamento. Entrega 1 ("Instalação e projeto vazio") e **Entrega 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11.**
-- **Próxima entrega: 3, "Física e interação"** (ver seção 9).
+- **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. **Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12.**
+- **Próxima entrega: 4, "Corpo do Nondas"** (ver seção 9).
 - **Código de jogo:** projeto Godot em `game/`:
-  - `levels/test_room/test_room.tscn`: sala cinza de teste. Instancia o jogador, o filtro VHS e o menu de pausa.
-  - `player/`: controlador de primeira pessoa. WASD anda, mouse olha.
+  - `levels/test_room/test_room.tscn`: sala cinza de teste. Instancia o jogador, o filtro VHS e o menu de pausa. Tem uma lata vermelha, uma poça e uma caixa amarela do tamanho de uma fita VHS em cima do caixote.
+  - `player/`: controlador de primeira pessoa. WASD anda, mouse olha. Chuta objetos soltos ao encostar neles. A cena do jogador tem a zona de chute, o raio de interação, o ponto da mão e a dica na tela.
+  - `interaction/`: `Interactor` (raio da câmera, tecla E), interface `IInteractable` e `Pickable` (objeto que se pega e solta).
   - `core/Settings.cs`: autoload com intensidade do filtro, sensibilidade do mouse e volume. Grava em `user://settings.cfg`.
-  - `vfx/`: filtro VHS (`vhs_filter.tscn`, `VhsFilter.cs`, `vhs_filter.gdshader`). O 3D é renderizado a 480 linhas.
+  - `vfx/`: filtro VHS (`vhs_filter.tscn`, `VhsFilter.cs`, `vhs_filter.gdshader`). O 3D é renderizado a 480 linhas. Poça que ondula (`puddle.tscn`, `Puddle.cs`, `puddle.gdshader`).
   - `ui/`: menu de pausa (`pause_menu.tscn`, `PauseMenu.cs`). Esc abre e fecha, pausa o jogo e solta o mouse.
   - `localization/ui.csv`: textos de interface em `pt`, `en` e `es`. O jogo usa o idioma do Windows; ainda não há troca no menu.
 - **Ferramentas:** Godot, .NET SDK e extensão C# instalados (ver seção 6).
@@ -84,6 +85,8 @@ Os três documentos abaixo são a referência completa. Esta seção é só o re
 | Resolução interna | Só o 3D é reduzido (`Scaling3DScale` = 480 / altura da janela). Menus e textos ficam na resolução da janela, com esticamento `canvas_items` (base 1280x720) |
 | Filtro VHS | Um shader de tela cheia. Aparência de câmera antiga, **sem nada que pisque ou corra pela tela** (escolha do dono). Cerca de 595 quadros por segundo a 1080p na sala de teste |
 | Interpolação de física | Ligada. A cabeça do jogador é destacada do corpo e posicionada a cada quadro |
+| Camadas de física | 1 `world`, 2 `player`, 3 `props` (objetos soltos). O jogador não colide com objetos soltos: ele os chuta por uma área na altura das pernas. Tabela completa em `docs/design/02-stack-architecture.md` |
+| Interação | Tecla E. Raio de 2 m que sai da câmera; o alvo implementa `IInteractable`. Um item na mão por vez, sem inventário. A dica na tela fica acima do filtro VHS |
 | Cenário e objetos | 100% próprios, gerados por script Python no Blender. Texturas procedurais |
 | Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios |
 | Áudio | Efeitos genéricos de acervos gratuitos, **somente licença CC0**, registrados em `docs/credits.md`. "Ruídos de fala" próprios |
@@ -182,7 +185,9 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Só abrir a janela do jogo depois que o dono escrever "pode rodar".** Terminar antes tudo o que não precisa da janela, dizer quantas execuções e quanto tempo, encerrar o turno e esperar. Um aviso seguido da execução não basta: o dono recusou esse formato. Cada liberação vale só para as execuções anunciadas. Sempre usar `timeout`.
 - Comandos sem janela não precisam de liberação: `dotnet build` e a importação abaixo.
 - Depois de criar ou alterar um arquivo que o Godot importa (como o CSV de tradução): `..._console.exe --headless --import --path game`. Encerra sozinho.
-- Para conferir a imagem sem o dono: `--write-movie <pasta>/frame.png --fixed-fps 30 --quit-after 45` grava os quadros em PNG.
+- O dono testa pelo editor, com F5.
+- **Teste sem janela (não precisa de liberação):** `..._console.exe --headless --path game --script <arquivo.gd>`, com `timeout`. O arquivo é um GDScript descartável, fora do repositório, que estende `SceneTree`, carrega a sala, simula teclas com `Input.action_press` e imprime posições. A física, os autoloads e o C# rodam normalmente. Shader e imagem não. Foi assim que a entrega 3 achou três defeitos antes de o dono jogar.
+- Para conferir a imagem sem o dono: `--write-movie <pasta>/frame.png --fixed-fps 30 --quit-after 45` grava os quadros em PNG. Aceita `--script` junto, para gravar um roteiro. **Cada quadro custa cerca de 0,18 s para gravar:** 280 quadros levaram 55 s. Estimar o tempo por esse número ao pedir a liberação.
 - Medição de quadros por segundo: `--fullscreen --disable-vsync --print-fps`, com `timeout 20`. A tela do dono é 1920x1080, 120 Hz ou mais.
 - Shader só é compilado com a janela aberta. Erro de shader não aparece no `dotnet build` nem no modo `--headless`.
 
@@ -192,7 +197,7 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 
 | Ferramenta | Origem oficial | Primeira entrega que precisa |
 |---|---|---|
-| Blender (LTS atual) | blender.org | 3 ou 4 |
+| Blender (LTS atual) | blender.org | 4 (a entrega 3 não precisou) |
 | MPFB (complemento do Blender) | makehumancommunity.org | 4, depois de confirmar a licença |
 | Audacity | audacityteam.org | 7 |
 
@@ -211,7 +216,19 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 
 - **Licença do MPFB/MakeHuman não confirmada.** A página consultada não informa. Confirmar na fonte oficial antes da entrega 4. Plano B: personagens próprios mais simples.
 - **Textura procedural** pode parecer artificial em material brasileiro (chapisco, caquinho). Validar na entrega 5; se não convencer, reabrir a decisão com o dono.
-- **Lata da entrega 3:** ligar `continuous_cd` no corpo rígido. No teste da entrega 1, objetos pequenos e rápidos atravessaram um piso fino nos dois motores de física.
+- **Todo objeto solto pequeno precisa de `continuous_cd`** (lata e fita já têm). No teste da entrega 1, objetos pequenos e rápidos atravessaram um piso fino nos dois motores de física.
+- **Todo objeto solto novo:** `collision_layer = 4` (camada 3, `props`) e `collision_mask = 5` (mundo e outros objetos). Na camada errada, o jogador volta a subir em cima dele.
+- **O jogador atravessa objetos soltos** (decisão da entrega 3). Um objeto que precise barrar o caminho deve ficar na camada `world`.
+- **Poça sem pés:** a ondulação nasce na posição do corpo. Na entrega 4, com as pernas, usar a posição de cada pé. A aparência dos anéis (finos e regulares) foi vista pelo dono em jogo e aprovada sem comentário.
+- **Chute determinístico:** a lata tomba sempre para a frente e segue deitada. Se parecer repetitivo na rua (entrega 8), variar o giro.
+- **Lata e fita estão escritas dentro de `test_room.tscn`.** Viram cenas próprias quando forem usadas em outro lugar (fita na entrega 6, lata na 8).
+- **Item na mão e troca de fase:** o `Pickable` guarda o pai original para voltar a ele ao ser solto. Se a fase for trocada com o item na mão, esse pai não existe mais: soltar lança erro e o `Interactor` fica preso em "Soltar" (achado do `reviewer`). No caso inverso, se o jogador for recarregado com o item na mão, o item é apagado junto, porque é filho do ponto da mão. Tratar os dois junto com o `LevelLoader`.
+- **Item de missão pode ser chutado para longe** (achado do `reviewer`): a fita é chutável e não há reposição se ela parar num vão estreito demais para o jogador ou cair fora do cenário. Na sala de teste todo ponto é alcançável. Decidir na entrega 6, quando a fita virar item de missão.
+- **`Interactor` busca o ponto da mão como irmão** (`"../HoldPoint"`), um desvio leve de "chamadas descem". Na entrega 4, que mexe nesse ponto por causa da mão, tornar o `HoldPoint` filho do `Interactor`.
+- **Poça no editor:** sem o jogo rodando, o shader mostra anéis parados no centro da poça (o script que os zera não roda no editor). No jogo não aparece.
+- **Texto da dica com a tecla fixa** ("[E] Pegar"). Se um dia houver troca de teclas, a tecla sai do texto.
+- **Dica acima do filtro VHS:** decisão minha, igual à do menu de pausa. O dono viu e não opinou.
+- **Objeto pequeno afunda alguns milímetros no piso** em repouso (tolerância de penetração padrão do Jolt, 2 cm). Não se vê a 480 linhas. Baixar `physics/jolt_physics_3d/simulation/penetration_slop` resolve, mas não foi adotado por ser um ajuste global sem necessidade visível.
 - **Corpo do Nondas (entrega 4) e interpolação:** a cabeça gira a cada quadro, direto do mouse; o corpo gira a 60 ticks por segundo, interpolado. Conferir se as pernas parecem atrasar em relação à câmera ao girar rápido.
 - **Teleporte do jogador (troca de fase, checkpoint):** com a interpolação ligada, chamar `ResetPhysicsInterpolation()` depois de mover o jogador, senão ele desliza de um ponto ao outro.
 - **Filtro VHS validado só na sala cinza e na página de teste.** A parte que o dono mais gostou (cor vazando) quase não aparece sem cor. Conferir de novo com ele na entrega 5, na locadora.
@@ -220,15 +237,15 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Filtro e menu instanciados em `test_room.tscn`:** quando o `LevelLoader` existir, eles precisam ficar num lugar que sobreviva à troca de fase.
 - **Volume:** o controle já atua no barramento principal, mas não há som para ouvir. Conferir na primeira entrega com áudio.
 - **Menu de pausa mínimo:** só os três controles e "Continuar". Faltam, por lição 3 da pesquisa: tamanho da legenda e idioma (entrega 7), sair do jogo, navegação por teclado.
-- **Janela 4K:** o código limita a escala 3D a 0,25, então em 2160 linhas o 3D fica com 540, não 480. O limite real do motor pode ser 0,1 (não conferido). Para conferir, na próxima execução liberada: atribuir 0,2 e imprimir `GetWindow().Scaling3DScale`.
-- **Alt+Tab com o menu fechado (não testado):** o clique que recapturava o mouse saiu nesta entrega. Pedir ao dono um teste de 30 segundos: jogar, Alt+Tab, voltar, mexer o mouse. Se o mouse não voltar capturado, recapturar ao recuperar o foco.
+- **Janela 4K (resolvido na entrega 3):** o limite real da escala 3D é 0,1. O piso no código passou de 0,25 para 0,1, então em 2160 linhas o 3D fica com 480. Não visto numa tela 4K de verdade: a do dono é 1080p.
+- **Alt+Tab com o menu fechado (resultado não confirmado):** o teste entrou no roteiro da entrega 3 (jogar, Alt+Tab, voltar, mexer o mouse). O dono aprovou a entrega sem dizer o resultado. Perguntar no início da entrega 4. Se o mouse não voltar capturado, recapturar ao recuperar o foco.
 - **Pausa, pontos a vigiar (achados do reviewer na entrega 2):**
   - Fechar o menu sempre captura o mouse. Quando existir tela com mouse solto (menu principal, epílogo), guardar o modo anterior e restaurar.
   - Trocar de fase com o menu aberto deixaria a árvore pausada sem menu. Tratar junto com o `LevelLoader`.
   - O jogo não pausa ao perder o foco da janela. Passa a importar quando houver ameaça (entrega 9).
 - **`settings.cfg` sem validação:** valores editados à mão fora da faixa entram como estão (por exemplo, sensibilidade 0). Mexer no controle corrige. Não tratado de propósito: só acontece editando o arquivo.
 - **Padrão do filtro: 0,7, decidido pelo dono em 2026-11-11.** No teste ele deixou o próprio controle em 0,3 e a sensibilidade em 0,8, mas escolheu manter o padrão do jogo. Não perguntar de novo.
-- **Cenas sem `uid`:** `player.tscn`, `test_room.tscn`, `vhs_filter.tscn` e `pause_menu.tscn` foram escritas à mão. Na primeira vez que o editor salvar, ele reescreve o cabeçalho; esse diff é esperado.
+- **Cenas sem `uid`:** `player.tscn`, `test_room.tscn`, `vhs_filter.tscn`, `pause_menu.tscn` e `puddle.tscn` foram escritas à mão. Na primeira vez que o editor salvar, ele reescreve o cabeçalho; esse diff é esperado.
 - **`docs/credits.md`** ainda não existe. Criar junto com o primeiro item de terceiros.
 - **Driver de vídeo:** o Direct3D 12 mediu 19% a mais que o Vulkan na sala vazia. Reavaliar na entrega 5, com uma cena de verdade.
 - **Exportação para Windows com `net10.0`:** não validada. Validar na entrega 19 (ou antes, se alguma entrega precisar exportar).
@@ -241,19 +258,20 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 
 ## 9. Próxima entrega
 
-**Entrega 3: Física e interação.**
+**Entrega 4: Corpo do Nondas.**
 
-- O dono joga: chuta uma lata, pisa numa poça que ondula, pega um objeto. São três das quatro mecânicas de imersão (a mão que se estica é da entrega 4).
+- O dono joga: olha para baixo e vê as próprias pernas; ao pegar a fita, vê a mão se esticar. É a quarta mecânica de imersão e o primeiro teste do pipeline de personagem.
 - Passos:
-  1. Lata: `RigidBody3D` com `continuous_cd` ligado (pendência da seção 8), empurrada quando o jogador esbarra. O `CharacterBody3D` não empurra corpos rígidos sozinho: aplicar impulso nas colisões do `MoveAndSlide`.
-  2. Poça: superfície com shader de ondulação em `game/vfx/`, disparada na posição em que o jogador pisa.
-  3. Sistema Interaction em `game/interaction/`: raio que sai da câmera, interface `IInteractable`, e um objeto que pode ser pegado.
-  4. Tudo na sala de teste. Dar alguma cor aos objetos novos, para o filtro VHS aparecer.
-- Fora desta entrega: sistema de ruído (só no clímax, entrega 12), animação da mão e corpo (entrega 4), som (não há áudio ainda), inventário além de "segurar um objeto".
-- A câmera fica em `Player/Head/Camera3D`. A cabeça é `top_level`: a posição dela no mundo vem de `_Process`, não da hierarquia.
-- Texto na tela (por exemplo, a dica de "pegar") entra por chave em `game/localization/ui.csv`, seguido da importação sem janela (seção 6).
-- Instalação: nenhuma, se lata, poça e objeto forem feitos com formas primitivas do Godot. O Blender só entra se o dono quiser modelos de verdade já nesta entrega; perguntar antes.
-- Pronto quando: o dono chuta a lata e ela rola sem atravessar o chão, vê a poça ondular ao pisar, e pega e solta um objeto.
+  1. Perguntar ao dono o resultado do teste de Alt+Tab (seção 8).
+  2. Licença da malha base: acionar o `researcher` para confirmar, na fonte oficial, a licença do MPFB/MakeHuman e a do que ele gera. Sem confirmação, plano B: corpo próprio mais simples, modelado por script.
+  3. Pedir autorização para instalar o Blender (LTS atual, blender.org) e, se a licença permitir, o MPFB. Uma instalação por vez, com origem, tamanho confirmado na fonte e motivo.
+  4. Corpo: script em `tools/blender/` gera o modelo e exporta `.glb` para `game/assets/models/`. Na cena do jogador, o corpo fica sob o `Player` (gira com o corpo, não com a cabeça) e a cabeça do modelo não pode aparecer na câmera.
+  5. Mão que se estica: hoje o item salta direto para a mão. O ponto de encaixe é `Interactor.Hold` e `Pickable.AttachTo`. A varredura que afasta o item da parede (`Interactor._Process`) precisa continuar valendo.
+  6. Poça: trocar a posição do corpo pela posição de cada pé.
+- Conferir: se as pernas parecem atrasar em relação à câmera ao girar rápido (pendência da interpolação, seção 8).
+- Fora desta entrega: outros personagens, a locadora (entrega 5), som, sistema de ruído.
+- Esta entrega tende a se dividir em duas sessões (personagem novo). Se dividir: primeiro as pernas visíveis, depois a mão.
+- Pronto quando: o dono olha para baixo e vê as pernas acompanhando o movimento, e vê a mão se esticar ao pegar a fita.
 
 ## 10. Release final (tarefas obrigatórias)
 

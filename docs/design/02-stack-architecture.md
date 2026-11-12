@@ -154,7 +154,7 @@ Medido em 2026-11-11 na mesma máquina, sala cinza de teste, tela cheia 1920x108
 | **Entrega 2: 3D a 480 linhas, filtro VHS aprovado (21 leituras por pixel)** | cerca de 595 (de 575 a 641) |
 
 - **Resolução interna:** só o 3D é reduzido, pela escala 3D do viewport (`Scaling3DScale` = 480 / altura da janela, ampliação bilinear). Menus e textos continuam na resolução da janela. Alternativas descartadas: o modo de esticamento `viewport` (amplia sem suavização e deixaria também o texto em 480 linhas) e um `SubViewport` (mais peças: encaminhamento de entrada e troca de fases dentro dele).
-- **Limite:** o código não deixa a escala 3D passar abaixo de 0,25, o mínimo oferecido nas configurações de projeto. Em janela com mais de 1920 pixels de altura (4K), o 3D fica com 1/4 da altura (540 linhas em 2160), e não 480. **Não conferido:** o limite real do motor pode ser 0,1; se for, o piso pode cair e o 4K teria 480 linhas.
+- **Limite:** o código não deixa a escala 3D passar abaixo de 0,25, o mínimo oferecido nas configurações de projeto. Em janela com mais de 1920 pixels de altura (4K), o 3D fica com 1/4 da altura (540 linhas em 2160), e não 480. **Não conferido:** o limite real do motor pode ser 0,1; se for, o piso pode cair e o 4K teria 480 linhas. (Conferido na entrega 3: o limite é 0,1 e o piso caiu. Ver abaixo.)
 - **Intensidade na medição:** a medição do filtro aprovado usou a intensidade que estava salva no `settings.cfg` do dono naquele momento, não registrada. O shader faz as mesmas 21 leituras em qualquer intensidade, então o custo é o mesmo.
 - **Filtro VHS:** um único shader de tela cheia (`game/vfx/vhs_filter.gdshader`) desenhado por cima da imagem pronta. Aparência de câmera antiga, sem nada que pisque ou corra pela tela: ondulação lenta, desvio fixo nas últimas linhas, contorno duro nas bordas, cor larga que borra para a direita e vaza das linhas de cima, granulação, pretos lavados e cor forte. A intensidade (0 a 1) multiplica todos os efeitos; em 0 a imagem passa intacta.
 - **Como o filtro foi escolhido:** a primeira versão (tremor aleatório por linha, faixa de tracking permanente) foi recusada pelo dono. Cinco opções foram comparadas numa página de teste descartável, sobre uma cena colorida; o dono aprovou a mistura da "fita limpa" (sem faixa, sem riscos, sem piscadas) com a "fita gasta" (imagem de câmera antiga). Regra que fica: defeitos que piscam ou atravessam a tela ficam fora do filtro geral. Eles podem voltar nas fitas assistidas na TV (entrega 6).
@@ -162,6 +162,34 @@ Medido em 2026-11-11 na mesma máquina, sala cinza de teste, tela cheia 1920x108
 - **Interface:** esticamento `canvas_items` com base 1280x720, para menus e legendas manterem o tamanho relativo em qualquer janela.
 - **Interpolação de física ligada** (`physics/common/physics_interpolation`). O corpo do jogador anda a 60 ticks por segundo e o motor suaviza entre eles. A cabeça (câmera) é destacada do corpo (`top_level`, sem interpolação) e posicionada a cada quadro: posição do corpo interpolada, rotação direto do mouse. É o padrão de câmera em primeira pessoa da documentação do Godot. A tela do dono é de 120 Hz ou mais, então sem isso o movimento tremeria.
 - Limite da medição: a sala continua sem textura e sem personagem. O ganho sobre a entrega 1 vem da resolução menor. O filtro aprovado custa cerca de 0,4 ms por quadro a 1080p (diferença entre 780 e 595 quadros por segundo), contra os 16,7 ms disponíveis a 60 quadros por segundo.
+
+### Decisão da entrega 3: objetos soltos, poça e interação
+
+Feito em 2026-11-12, na sala de teste, só com formas primitivas do Godot (sem Blender).
+
+**Camadas de física** (nomeadas em `project.godot`). Funcionam como um par de máscaras de bits: a camada diz "o que eu sou", a máscara diz "o que eu enxergo".
+
+| Quem | Camada | Enxerga |
+|---|---|---|
+| Cenário (paredes, piso, móveis) | 1 `world` | (estático) |
+| Jogador (`CharacterBody3D`) | 2 `player` | 1 |
+| Objetos soltos (lata, fita) | 3 `props` | 1 e 3 |
+| Zona de chute do jogador (`KickZone`) | nenhuma | 3 |
+| Raio de interação (`Interactor`) | nenhuma | 1 e 3 |
+| Poça (`Area3D`) | nenhuma | 2 e 3 |
+
+- **O jogador não colide com objetos soltos.** Na primeira versão colidia: o teste mostrou o jogador subindo 0,58 m em cima da lata espremida contra a parede, porque a cápsula escorrega por cima de objetos baixos. Agora ele passa por eles e os chuta.
+- **Chute** (`PlayerController.KickLooseObjects`): a `KickZone` é uma área na altura das pernas (cilindro de 0,3 m de raio, do piso até 0,5 m). Todo corpo rígido dentro dela recebe um impulso para longe do jogador, proporcional à velocidade com que jogador e objeto se aproximam (`KickStrength`, 1,8), mais um pequeno levantamento (`KickLift`) e um giro para a frente (`KickSpin`). Sem o giro, a lata deslizava em pé. A velocidade do jogador usada na conta é a que ele realmente andou: barrado por uma parede, ele não chuta um objeto parado. Um objeto que vem na direção do jogador parado é rebatido.
+- **Por que só as pernas:** com a zona do tamanho do corpo inteiro, soltar a fita andando para a frente a arremessava 2,25 m, porque o tronco a alcançava ainda no ar (achado do `reviewer`). Com a zona nas pernas ela cai reta.
+- **Objetos pequenos usam `continuous_cd`.** Lata (6,6 cm por 12,2 cm, 20 g) e fita (19 por 10,5 por 2,5 cm, 200 g).
+- **Poça** (`game/vfx/puddle.tscn`, `Puddle.cs`, `puddle.gdshader`): um plano com shader. O script guarda até 8 ondulações (posição e progresso de 0 a 1) e as envia ao shader a cada quadro enquanto houver alguma viva. Nasce uma ondulação onde um corpo entra na água e outra a cada 0,5 m andado dentro dela. O shader desenha cada uma como um trem curto de anéis que se afasta e some, inclina a superfície (o reflexo da lâmpada treme) e clareia as cristas. A malha continua plana. O material é local a cada cópia da cena, para que duas poças não ondulem juntas. Para uma poça maior, escalar o nó.
+- **Interação** (`game/interaction/`): `Interactor` é um `RayCast3D` de 2 m preso à câmera. O que ele atinge e implementa `IInteractable` pode ser usado com a ação `interact` (tecla E). É uma interface com um handler, como um `onClick` tipado. A dica na tela sobe por sinal (`PromptChanged`) e é ligada ao `Label` na própria cena do jogador, como uma prop de callback ligada pelo componente pai.
+- **Pegar e soltar** (`Pickable`): ao ser pego, o corpo rígido é congelado, perde a camada de colisão e vira filho do `HoldPoint`, um nó sob a câmera. Ao ser solto, volta ao pai original e à física. Não há inventário: só um item na mão.
+- **O item na mão não atravessa parede.** A cada quadro o `Interactor` varre a forma do item dos olhos até a mão, só contra a camada `world`, e o posiciona onde ele pararia, com 2 cm de folga. Perto da parede o item recua para junto da câmera, como um braço dobrando. Por isso soltar é sempre permitido: o item nunca está dentro da parede.
+- **A dica fica acima do filtro VHS** (camada 5, entre o filtro e o menu de pausa), pelo mesmo motivo do menu: legibilidade com o filtro no máximo.
+- **Escala 3D:** o limite real do motor é 0,1 (conferido: pedir 0,2 devolve 0,2; pedir 0,05 devolve 0,1). O piso no código passou de 0,25 para 0,1. Em 4K o 3D fica com 480 linhas.
+- **Como foi testado sem o dono:** roteiros GDScript descartáveis rodados com `--headless --script`, que carregam a sala, simulam as teclas e imprimem posições. A física roda igual sem janela. Depois, uma execução com janela e `--write-movie` para conferir o shader e a aparência.
+- Limites: a ondulação nasce na posição do corpo, não de cada pé (não há pés até a entrega 4). A lata tomba sempre para a frente e segue deitada. Um objeto pequeno pode afundar alguns milímetros no piso em repouso (tolerância de penetração padrão do Jolt, 2 cm). Quadros por segundo não foram medidos de novo nesta entrega.
 
 ## 5. Qualidade
 

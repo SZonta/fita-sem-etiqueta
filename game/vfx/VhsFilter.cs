@@ -11,8 +11,8 @@ public partial class VhsFilter : CanvasLayer
 {
     private const float InternalLines = 480f;
 
-    // Lowest 3D scale offered by the project settings. Reached only on windows taller than 1920 pixels.
-    private const float MinScale = 0.25f;
+    // Lowest 3D scale the engine accepts. Reached only on windows taller than 4800 pixels.
+    private const float MinScale = 0.1f;
 
     private ShaderMaterial _material = null!;
 
