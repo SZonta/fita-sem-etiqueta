@@ -3,20 +3,21 @@
 Fonte de verdade do projeto **Fita Sem Etiqueta**. Qualquer sessão nova começa lendo este arquivo.
 Atualizar SEMPRE antes de cada commit.
 
-Última atualização: 2026-11-13 (fim da Entrega 4, parte 1: pernas).
+Última atualização: 2026-11-14 (fim da Entrega 4, parte 2: mão).
 
 ## 1. Estado atual
 
 - **Etapa 1 (Pesquisa sobre Fears to Fathom):** concluída e aprovada em 2026-11-11.
 - **Etapa 2 (Planejamento):** concluída e aprovada em 2026-11-11.
-- **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12. **Entrega 4 ("Corpo do Nondas") dividida em duas sessões: parte 1 (pernas) concluída e aprovada em 2026-11-13.**
-- **Próxima entrega: 4, parte 2, "Mão do Nondas"** (ver seção 9).
+- **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12. Entrega 4 ("Corpo do Nondas") concluída em duas sessões: parte 1 (pernas) aprovada em 2026-11-13, **parte 2 (mão) aprovada em 2026-11-14**.
+- **Próxima entrega: 5, "A locadora"** (ver seção 9).
 - **Código de jogo:** projeto Godot em `game/`:
-  - `levels/test_room/test_room.tscn`: sala cinza de teste. Instancia o jogador, o filtro VHS e o menu de pausa. Tem uma lata vermelha, uma poça e uma caixa amarela do tamanho de uma fita VHS em cima do caixote.
+  - `levels/test_room/test_room.tscn`: sala cinza de teste. Instancia o jogador, o filtro VHS e o menu de pausa. Tem uma lata vermelha, uma poça e uma caixa amarela do tamanho de uma fita VHS em cima do caixote, na borda (o braço alcança até uns 70 cm à frente).
   - `player/`: controlador de primeira pessoa (`PlayerController`). WASD anda a 2 m/s, mouse olha. A cena do jogador tem o corpo visível (`Body`, com o script `PlayerBody`), o raio de interação, o ponto da mão e a dica na tela.
-  - `player/PlayerBody.cs`: corpo do Nondas visto de dentro. Pernas e braços animados pela direção e pela velocidade; cabeça desenhada só como sombra; uma área do tamanho do sapato em cada pé, que chuta objetos soltos e faz a poça ondular.
+  - `player/PlayerBody.cs`: corpo do Nondas visto de dentro. Pernas e braços animados pela direção e pela velocidade; cabeça desenhada só como sombra; uma área do tamanho do sapato em cada pé, que chuta objetos soltos e faz a poça ondular. Fica 12 a 32 cm atrás da câmera conforme o olhar e é empurrado para baixo dela pelas paredes. Agacha para pegar coisas e estica o braço direito até elas.
+  - `player/HandAim.cs` e `player/FingerCurl.cs`: modificadores de esqueleto que giram a mão e fecham os dedos, depois da cinemática inversa do braço.
   - `assets/models/nondas.glb`: modelo do Nondas (malha do MPFB, CC0), gerado por script do Blender que fica num repositório privado (ver seção 4, Licença).
-  - `interaction/`: `Interactor` (raio da câmera, tecla E), interface `IInteractable` e `Pickable` (objeto que se pega e solta).
+  - `interaction/`: `Interactor` (raio da câmera com mira tolerante, tecla E; conduz a pegada: agachar, alcançar, fechar a mão, levantar, segurar pela ponta), interface `IInteractable`, `Pickable` (objeto que se pega e solta) e interface `IReacher` (o corpo que alcança, injetado pelo `PlayerController`).
   - `core/Settings.cs`: autoload com intensidade do filtro, sensibilidade do mouse e volume. Grava em `user://settings.cfg`.
   - `vfx/`: filtro VHS (`vhs_filter.tscn`, `VhsFilter.cs`, `vhs_filter.gdshader`). O 3D é renderizado a 480 linhas. Poça que ondula (`puddle.tscn`, `Puddle.cs`, `puddle.gdshader`).
   - `ui/`: menu de pausa (`pause_menu.tscn`, `PauseMenu.cs`). Esc abre e fecha, pausa o jogo e solta o mouse.
@@ -88,8 +89,8 @@ Os três documentos abaixo são a referência completa. Esta seção é só o re
 | Filtro VHS | Um shader de tela cheia. Aparência de câmera antiga, **sem nada que pisque ou corra pela tela** (escolha do dono). Cerca de 595 quadros por segundo a 1080p na sala de teste |
 | Interpolação de física | Ligada. A cabeça do jogador é destacada do corpo e posicionada a cada quadro |
 | Camadas de física | 1 `world`, 2 `player`, 3 `props` (objetos soltos), 4 `feet` (pés do jogador). O jogador não colide com objetos soltos: ele os chuta com os pés. Tabela completa em `docs/design/02-stack-architecture.md` |
-| Corpo do jogador | Modelo próprio sobre a malha do MPFB, visível em primeira pessoa. Animações geradas por script (parado e andando nas 4 direções). Detalhes em `docs/design/02-stack-architecture.md`, decisão da entrega 4 |
-| Interação | Tecla E. Raio de 2 m que sai da câmera; o alvo implementa `IInteractable`. Um item na mão por vez, sem inventário. A dica na tela fica acima do filtro VHS |
+| Corpo do jogador | Modelo próprio sobre a malha do MPFB, visível em primeira pessoa. Animações geradas por script (parado, andando nas 4 direções, agachar para pegar). Braço direito por cinemática inversa (`TwoBoneIK3D`). Detalhes em `docs/design/02-stack-architecture.md`, decisões da entrega 4 (partes 1 e 2) |
+| Interação | Tecla E. Raio de 2 m que sai da câmera, com uma esfera de 8 cm quando o raio não acerta; o alvo implementa `IInteractable`. Item solto só se pega se o braço alcança (agachando se preciso; o item desliza no máximo 10 cm até a mão). Um item na mão por vez, sem inventário. A dica na tela fica acima do filtro VHS |
 | Cenário e objetos | 100% próprios, gerados por script Python no Blender. Texturas procedurais |
 | Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios. Licença confirmada em 2026-11-12: os assets do MPFB são CC0 (só os pacotes CC0 são usados); o código do complemento é GPLv3 e não vai para o jogo. Registro em `docs/credits.md` |
 | Áudio | Efeitos genéricos de acervos gratuitos, **somente licença CC0**, registrados em `docs/credits.md`. "Ruídos de fala" próprios |
@@ -201,6 +202,10 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **`--fixed-fps 60` no teste sem janela** deixa cada quadro com exatamente um tick de física: os números saem iguais a cada execução.
 - Um roteiro `--script` que estende `SceneTree` precisa devolver `false` no fim do `_process`. O nó só fica utilizável a partir do primeiro quadro, e não no `_initialize`.
 - Propriedade C# de tipo que não é Variant (como `IReadOnlyList<Area3D>`) não aparece para o GDScript dos roteiros.
+- **Pose final do esqueleto** (depois da cinemática inversa e dos outros modificadores): só no sinal `skeleton_updated`. `GetBoneGlobalPose` lido em `_process` devolve a pose sem os modificadores.
+- **`--fixed-fps 144`** simula quadros mais rápidos que a física (quadros sem tick). Defeitos de ordem entre física e imagem (como o tremor da mão ao andar) só aparecem assim; com 60, cada quadro tem um tick e eles somem. Usar 30 ou 40 para quadros mais lentos que a física.
+- O `_process` de um roteiro que estende `SceneTree` roda antes do `_process` dos nós no mesmo quadro.
+- Nas gravações, o quadro logo depois de um salto de ângulo feito pelo roteiro (por exemplo de 0° a -60° num quadro) mostra uma transição; não julgar a aparência por ele.
 
 ### Blender (gerar modelos)
 
@@ -210,6 +215,8 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Página de comparação no painel do navegador:** arquivo fora da pasta do projeto vira foto estática (sem JavaScript). Arquivo dentro do projeto abre como endereço `data:`, onde imagens com caminho relativo não carregam, e páginas grandes são recusadas. O que funcionou: servir uma pasta temporária com `python.exe -m http.server` (o Python do Blender) por uma entrada em `.claude/launch.json`, com as imagens em JPEG. Apagar a pasta e a entrada depois.
 - API do MPFB usada por script: `HumanService.create_human`, `TargetService.bake_targets`, `HumanService.add_builtin_rig(body, "game_engine")`. O módulo é `bl_ext.user_default.mpfb`; ligar com `addon_utils.enable` **depois** de `read_factory_settings`.
 - **Ação nova estraga a primeira chave** se já existir uma faixa de NLA tocando: criar as faixas de NLA só depois de gravar todas as ações.
+- Ações que mexem nas costas (`stoop`) gravam também `spine_01` a `spine_03`; as outras ações gravam as costas retas (`stand_up_straight`), para não herdarem a pose da ação gravada antes.
+- **Conferir o pescoço:** render no Blender da câmera do jogo olhando para baixo, com o corpo a 11, 18, 24 e 32 cm, e a malha `Head` escondida. Foi assim que a tampa do pescoço foi validada sem abrir o jogo.
 
 ### A instalar nas próximas entregas
 
@@ -232,8 +239,7 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 
 ## 8. Pendências e decisões em aberto
 
-- **Mão (entrega 4, parte 2):** o item na mão ainda salta direto para o `HoldPoint`, filho da câmera. Olhando 89° para baixo, ele fica dentro da barriga ou do braço (achado do `reviewer`). Os braços do modelo pendem ao lado do corpo e ainda não alcançam nada.
-- **Corpo 32 cm atrás da câmera:** sem isso, olhando para baixo, aparece o buraco do pescoço. Efeito colateral: andando de costas até a parede, os calcanhares entram uns 8 cm nela. Só se vê virando a câmera para trás. O chute por trás da parede foi bloqueado por um raio (achado do `reviewer`).
+- **Corpo atrás da câmera (12 a 32 cm, conforme o olhar):** uma varredura empurra o corpo para baixo da câmera junto a paredes; nada entra mais de 6 mm (64 casos). Encostado de costas num canto, olhando para baixo, o corpo chega a 11 cm da câmera e o peito ocupa metade da tela (pescoço tampado; o dono aprovou). O chute por trás da parede continua bloqueado por um raio (achado do `reviewer` na parte 1).
 - **Chute pelos pés:** a lata só voa quando o sapato encosta nela. Uma lata centrada entre os pés (30 cm de distância entre eles) não é chutada; as pernas passam por cima. O pé sobe 10 cm na passada e às vezes passa por cima da lata (12 cm), e quem chuta é o calcanhar, um pouco tarde. Se o dono reclamar: baixar a passada para 5 cm (mais realista) e ajustar o `TouchHeight` da poça junto.
 - **Passo para o lado:** o pé desliza cerca de 60%, porque o passo lateral é curto (para os pés não se cruzarem) e o ritmo é o da caminhada para a frente. O dono aprovou assim.
 - **`TouchHeight` da poça (10 cm):** objeto solto com centro acima de 10 cm (uma garrafa em pé, por exemplo) nunca faz a poça ondular. A altura é medida em metros no mundo, então a poça pode ser escalada.
@@ -245,9 +251,15 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **O jogador atravessa objetos soltos** (decisão da entrega 3). Um objeto que precise barrar o caminho deve ficar na camada `world`.
 - **Chute determinístico:** a lata tomba sempre para a frente e segue deitada. Se parecer repetitivo na rua (entrega 8), variar o giro.
 - **Lata e fita estão escritas dentro de `test_room.tscn`.** Viram cenas próprias quando forem usadas em outro lugar (fita na entrega 6, lata na 8).
-- **Item na mão e troca de fase:** o `Pickable` guarda o pai original para voltar a ele ao ser solto. Se a fase for trocada com o item na mão, esse pai não existe mais: soltar lança erro e o `Interactor` fica preso em "Soltar" (achado do `reviewer`). No caso inverso, se o jogador for recarregado com o item na mão, o item é apagado junto, porque é filho do ponto da mão. Tratar os dois junto com o `LevelLoader`.
+- **Item na mão e troca de fase:** o `Pickable` guarda o pai original para voltar a ele ao ser solto. Se a fase for trocada com o item na mão, esse pai não existe mais: soltar lança erro e o `Interactor` fica preso em "Soltar" (achado do `reviewer`). No caso inverso, se o jogador for recarregado com o item na mão, o item é apagado junto, porque é filho do ponto da mão. Tratar os dois junto com o `LevelLoader`. Desde a parte 2, um item apagado enquanto está na mão é esquecido (`ForgetFreedItem`); o caso do pai original que não existe mais continua aberto.
+- **Regra de montagem de fase (alcance da mão, medido na entrega 4, parte 2):** item em cima de móvel a até uns 65 cm do eixo do jogador encostado (uns 30 cm da borda de um balcão de 1 m); no chão, até uns 50 cm à frente; em prateleira, até 1,7 m de altura. Fora disso o "[E] Pegar" não aparece. A fita da sala de teste foi movida para a borda do caixote por isso.
+- **Caminho do item não é varrido** (achado do `reviewer`): só a posição de segurar é afastada das paredes. Subindo de uma prateleira com tábua acima, ou de baixo de uma mesa, o item atravessa a tábua; e o alcance mede só a distância, então pega item atrás de um balcão baixo ou de uma grade (braço e tronco atravessam). Resolver na entrega 5, com as prateleiras de verdade: um raio do ombro até o item contra a camada `world` e uma varredura do caminho, ou recusar a pegada.
+- **Item que desliza até a mão** (decisão do dono): até 10 cm quando o braço fica aquém. Girando muito durante a pegada (1 s), o item segue a mão no máximo 20 cm e pode descolar dela por um instante.
+- **Pegada feita para a fita** (pela ponta, polegar na frente). Item de outro formato (lata, garrafa) pode precisar de outra pegada; a lata nem é `Pickable` hoje.
+- **Pulso ainda gira uns 40°** em relação ao antebraço ao segurar (o esqueleto não tem ossos de torção; o antebraço já assume 60%). O dono aprovou a aparência.
+- **Chute abaixo de 60 quadros por segundo:** o corpo é posicionado só no quadro de imagem (no tick de física a mão tremia ao andar). Os pés chutam da posição desenhada; abaixo de 60 quadros por segundo, um chute pode sair um quadro atrasado. A lata foi chutada a 144, 60 e 30.
+- **Fita atravessou o chão uma vez** no teste do dono, sem que ele lembrasse o que fez antes. Não se reproduziu em 8 tentativas (soltar do caixote e do chão, 5 ângulos). Se acontecer de novo, pedir ao dono o que fez nos 5 segundos anteriores.
 - **Item de missão pode ser chutado para longe** (achado do `reviewer`): a fita é chutável e não há reposição se ela parar num vão estreito demais para o jogador ou cair fora do cenário. Na sala de teste todo ponto é alcançável. Decidir na entrega 6, quando a fita virar item de missão.
-- **`Interactor` busca o ponto da mão como irmão** (`"../HoldPoint"`), um desvio leve de "chamadas descem". Na entrega 4, parte 2, que mexe nesse ponto por causa da mão, tornar o `HoldPoint` filho do `Interactor`.
 - **Poça no editor:** sem o jogo rodando, o shader mostra anéis parados no centro da poça (o script que os zera não roda no editor). No jogo não aparece.
 - **Texto da dica com a tecla fixa** ("[E] Pegar"). Se um dia houver troca de teclas, a tecla sai do texto.
 - **Dica acima do filtro VHS:** decisão minha, igual à do menu de pausa. O dono viu e não opinou.
@@ -278,17 +290,15 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 
 ## 9. Próxima entrega
 
-**Entrega 4, parte 2: Mão do Nondas.**
+**Entrega 5: A locadora** (`docs/design/03-mvp.md`, marco 1).
 
-- O dono joga: ao pegar a fita, vê o braço direito do Nondas se esticar até ela e trazê-la para a mão; ao soltar, a mão abre e o braço volta. É a quarta mecânica de imersão.
-- Já existe (parte 1): o modelo `nondas.glb` com esqueleto `game_engine` (ossos `upperarm_r`, `lowerarm_r`, `hand_r` e dedos), braços pendendo ao lado do corpo, o script gerador em `tools/blender/nondas_body.py` (repositório privado) e o `PlayerBody`, que monta a `AnimationTree` em código.
-- Passos:
-  1. Decidir com o dono como o braço alcança o item. Opções: cinemática inversa em tempo real no Godot (o Godot 4.7 tem modificadores de esqueleto) ou animação feita no Blender. A primeira alcança qualquer ponto; a segunda é mais simples, mas é uma pose só. Recomendação a confirmar na documentação oficial.
-  2. Ponto de encaixe: `Interactor.Hold` e `Pickable.AttachTo`. Tornar o `HoldPoint` filho do `Interactor` (pendência da seção 8).
-  3. A varredura que afasta o item da parede (`Interactor._Process`) precisa continuar valendo, e o item não pode entrar na barriga ao olhar para baixo (achado do `reviewer`, seção 8).
-  4. Dedos fechando no item e mão abrindo ao soltar, se couber.
-- Fora desta entrega: outros personagens, a locadora (entrega 5), som, sistema de ruído.
-- Pronto quando: o dono pega a fita e vê a mão se esticar até ela; solta e vê a mão voltar.
+- O dono anda pela Astro Vídeo Locadora pronta: balcão, prateleiras por gênero, TV de teste com videocassete, porta de aço. Descrição completa em `docs/design/01-story.md` (térreo de um sobrado; rebobinadeira, caixa de devoluções na porta, seção adulta atrás de uma cortina, depósito nos fundos).
+- Valida a **textura procedural** (parede e piso). Se não convencer, a decisão é reaberta com o dono nesta entrega (seção 8).
+- Cenário gerado por script do Blender em `tools/blender/` (repositório privado), exportado em `.glb`. Coerência visual de uma cidade do interior paulista em 1996 (agente `artist`; fatos de época pelo `researcher`).
+- Pendências da seção 8 que caem nesta entrega: medir quadros por segundo com o personagem; reavaliar Direct3D 12 contra Vulkan; conferir o filtro VHS com cor (a sala cinza escondia quase todo o efeito); fitas e balcão na altura e na profundidade que o braço alcança.
+- Medidas que o cenário precisa respeitar: portas com 80 cm ou mais (cápsula de 60 cm); balcão e prateleiras com itens a até uns 70 cm da borda, a 1 m de altura (alcance medido na entrega 4, parte 2); item no chão a até uns 50 cm.
+- Fora desta entrega: fitas que se assistem (entrega 6), personagens e diálogo (7), rua e bar (8), som, sistema de ruído.
+- Pronto quando: o dono anda pela locadora no editor (F5) e aprova a aparência das paredes, do piso e dos móveis.
 
 ## 10. Release final (tarefas obrigatórias)
 

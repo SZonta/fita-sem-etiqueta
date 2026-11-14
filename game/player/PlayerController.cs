@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using FitaSemEtiqueta.Core;
+using FitaSemEtiqueta.Interaction;
 using Godot;
 
 namespace FitaSemEtiqueta.Player;
@@ -39,8 +40,13 @@ public partial class PlayerController : CharacterBody3D
     // Height above the player's feet the reach check starts from: above the floor, below a low step.
     private const float KickReachHeight = 0.1f;
 
+    // Closest the camera comes to a wall when the head moves with a stoop, metres
+    // (twice the camera's near plane, so the wall is never cut open).
+    private const float HeadClearance = 0.1f;
+
     private Node3D _head = null!;
     private PlayerBody _body = null!;
+    private Interactor _interactor = null!;
     private readonly HashSet<RigidBody3D> _kicked = new();
     private float _eyeHeight;
     private float _yaw;
@@ -50,6 +56,7 @@ public partial class PlayerController : CharacterBody3D
     {
         _head = GetNode<Node3D>("Head");
         _body = GetNode<PlayerBody>("Body");
+        _interactor = GetNode<Interactor>("Head/Camera3D/Interactor");
         _eyeHeight = _head.Position.Y;
         _yaw = GlobalRotation.Y;
 
@@ -64,6 +71,10 @@ public partial class PlayerController : CharacterBody3D
             part.TopLevel = true;
             part.PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
         }
+
+        // The right hand holds whatever the interactor carries, and only what the body can reach.
+        _body.SetHandTarget(_interactor.Grip);
+        _interactor.Body = _body;
 
         Input.MouseMode = Input.MouseModeEnum.Captured;
     }
@@ -81,14 +92,36 @@ public partial class PlayerController : CharacterBody3D
     public override void _Process(double delta)
     {
         Vector3 feet = GetGlobalTransformInterpolated().Origin;
-        _head.GlobalPosition = feet + Vector3.Up * _eyeHeight;
+        float stoop = _interactor.Depth * _interactor.Bend;
+        Vector3 eyes = feet + Vector3.Up * _eyeHeight;
+        _head.GlobalPosition = eyes + HeadShift(eyes, new Basis(Vector3.Up, _yaw) * _body.HeadShift(stoop));
         _head.Rotation = new Vector3(_pitch, _yaw, 0);
-        PlaceBody(feet);
+        _body.Place(feet, _yaw, _pitch, _interactor.Bend, delta);
+        _body.Stoop(stoop, _interactor.Bend);
+        _body.PoseRightHand(_interactor.ArmReach, _interactor.HandClosed);
     }
 
-    private void PlaceBody(Vector3 feet)
+    /// <summary>
+    /// The head goes down and forward with the body when stooping. Bending close to a wall,
+    /// it stops short of the wall instead of putting the camera through it.
+    /// </summary>
+    private Vector3 HeadShift(Vector3 eyes, Vector3 shift)
     {
-        _body.GlobalTransform = new Transform3D(new Basis(Vector3.Up, _yaw), feet);
+        float length = shift.Length();
+        if (length < 0.001f)
+        {
+            return shift;
+        }
+
+        Vector3 way = shift / length;
+        var ray = PhysicsRayQueryParameters3D.Create(eyes, eyes + way * (length + HeadClearance), WorldMask);
+        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(ray);
+        if (hit.Count == 0)
+        {
+            return shift;
+        }
+
+        return way * Mathf.Max(0, eyes.DistanceTo((Vector3)hit["position"]) - HeadClearance);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -103,7 +136,10 @@ public partial class PlayerController : CharacterBody3D
             velocity += GetGravity() * (float)delta;
         }
 
-        Vector2 input = Input.GetVector("move_left", "move_right", "move_forward", "move_back");
+        // Standing still while picking something up.
+        Vector2 input = _interactor.Busy
+            ? Vector2.Zero
+            : Input.GetVector("move_left", "move_right", "move_forward", "move_back");
         Vector3 direction = Transform.Basis * new Vector3(input.X, 0, input.Y);
         velocity.X = direction.X * WalkSpeed;
         velocity.Z = direction.Z * WalkSpeed;
@@ -111,9 +147,9 @@ public partial class PlayerController : CharacterBody3D
         Velocity = velocity;
         MoveAndSlide();
 
-        // Also placed here, not only in _Process: when frames run slower than physics ticks,
-        // the feet would otherwise kick and splash from where the player was a tick ago.
-        PlaceBody(GlobalPosition);
+        // The feet kick from where the body was last drawn (placed in _Process). The body is not placed
+        // here too: left at the physics position until the frame, the reaching hand lands a tick behind
+        // and shakes while walking. Below 60 frames per second a kick can come one frame late.
         KickLooseObjects();
 
         // What the player really moved: walking into a wall, the legs stand still.

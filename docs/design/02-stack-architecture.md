@@ -213,8 +213,8 @@ Feito em 2026-11-12 e 2026-11-13. Primeiro personagem do pipeline. A mão que se
 
 **Na cena do jogador:**
 
-- O nó `Body` fica destacado do jogador (`top_level`, sem interpolação de física) e é posicionado a cada quadro com a rotação do mouse, como a cabeça. Girando a 60 ticks por segundo, as pernas ficariam atrasadas em relação à câmera ao girar olhando para baixo. Também é posicionado a cada tick de física, para pés e chute não usarem a posição antiga quando os quadros ficam mais lentos que a física (achado do `reviewer`).
-- O modelo fica 32 cm atrás da câmera. Mais perto, olhando para baixo, a câmera via o buraco do pescoço e o peito cobria metade da tela.
+- O nó `Body` fica destacado do jogador (`top_level`, sem interpolação de física) e é posicionado a cada quadro com a rotação do mouse, como a cabeça. Girando a 60 ticks por segundo, as pernas ficariam atrasadas em relação à câmera ao girar olhando para baixo. Na parte 1 ele também era posicionado a cada tick de física (achado do `reviewer`); a parte 2 desfez isso, ver abaixo.
+- O modelo fica 32 cm atrás da câmera. Mais perto, olhando para baixo, a câmera via o buraco do pescoço e o peito cobria metade da tela. Na parte 2 essa distância passou a depender do olhar e das paredes (ver abaixo).
 - **Velocidade de andar: 3,0 → 2,0 m/s** (decisão do dono). A 3,0 m/s as pernas davam 5 passos por segundo.
 
 **Pés:** cada pé tem uma `Area3D` do tamanho do sapato (11 x 28 x 9 cm), presa ao osso por um `BoneAttachment3D`, na camada 4 `feet`, enxergando a camada 3 `props`.
@@ -225,6 +225,39 @@ Feito em 2026-11-12 e 2026-11-13. Primeiro personagem do pipeline. A mão que se
 **Como foi testado:** roteiros `--headless --fixed-fps 60` (ondulações por pisada, chute por cada pé, lata entre os pés, fita solta andando, andar para os lados e para trás, lata atrás de parede fina) e uma gravação com janela de 240 quadros. Defeitos achados assim antes do dono jogar: a primeira chave de cada ação herdava a pose do `idle` (faixa de NLA tocando durante a gravação) e fazia o pé quicar e a poça ondular duas vezes; a perna se esticava 2 cm além do comprimento ao pisar.
 
 **Limites:** quadros por segundo não medidos; sem textura (cores lisas); a lata centrada entre os pés não é chutada; o calcanhar às vezes chuta a lata depois de o pé passar por cima dela.
+
+### Decisão da entrega 4 (parte 2): mão do Nondas
+
+Feito em 2026-11-13 e 2026-11-14. O dono escolheu cada opção entre alternativas apresentadas com prós e contras. A mão que se estica é a quarta mecânica de imersão.
+
+**Técnica: cinemática inversa em tempo real** (pesquisa do `researcher` na documentação do Godot 4.7, confiança alta). Três modificadores de esqueleto, filhos do `Skeleton3D`, rodam depois da `AnimationTree`, nesta ordem, cada um com `Influence` de 0 (animação pura) a 1:
+
+- `TwoBoneIK3D` (ombro, cotovelo, pulso): o pulso vai até o nó `Grip` do `Interactor`. O cotovelo dobra na direção de um nó de polo, à direita, abaixo e atrás do corpo. Como um `useEffect` que ajusta a pose depois do render da animação.
+- `HandAim` (próprio, `player/HandAim.cs`): gira a mão para os eixos do `Grip` (Y ao longo dos dedos, Z saindo da palma). O esqueleto do MPFB não tem ossos de torção: girar só a mão torcia a pele do pulso como papel de bala (105° medidos). O antebraço assume 60% do giro, em torno do próprio comprimento, e o pulso não sai do lugar.
+- `FingerCurl` (próprio, `player/FingerCurl.cs`): dobra cada articulação dos dedos em torno do próprio eixo X (todas dobram para o Z do osso no MPFB). Pegada pela ponta: nós dos dedos 70°, meio 15°, ponta 5°; polegar 25° nas duas últimas.
+- A animação de andar e a de agachar alcançam um ponto fixo; a pose do Blender sozinha não alcançaria itens em alturas diferentes.
+
+**Distância do corpo atrás da câmera** (`PlayerBody.Place`): 12 cm olhando à frente (proporção humana, para a mão segurar o item à vista) e 32 cm olhando para baixo (sem ver o pescoço). A troca acontece entre 10° e 40° para baixo, antes de os pés aparecerem. Durante a pegada, o corpo fica embaixo da câmera.
+
+**Corpo e parede** (achado do dono na parte 1: braço atravessava a parede de costas ou na diagonal, até 12 cm): um prisma com o contorno do corpo visto de cima (0,56 m de largura, dos joelhos aos ombros, todo dentro dos 0,3 m da cápsula) é varrido de baixo dos olhos até a posição do corpo. Batendo numa parede, desliza ao longo dela (como o jogador). Resultado: nada entra mais de 6 mm em 64 casos (parede de lado, de frente, de costas, canto, 24 ângulos, olhando à frente e para baixo). Com a parede atrás, o corpo chega a 11 cm da câmera e, olhando para baixo, aparecia o buraco do pescoço: o script do Blender tampa o pescoço com a cor da camiseta (`close_neck`). Cápsula mais larga foi recusada (portas de 80 cm).
+
+**Pegar um item** (`Interactor`, 1,05 s, o jogador fica parado):
+
+1. Inclinar ou agachar (0,45 s), esticando o braço até o item. A ação `stoop` do Blender vai de em pé a agachado: primeiro inclina o tronco (até 80°), depois agacha (o quadril desce até 60 cm), com os pés plantados e as mãos apoiadas nos joelhos. O jogo a toca parada na profundidade necessária (`TimeSeek` com escala de tempo 0). A câmera desce com a cabeça e para 10 cm antes de uma parede. A mão chega por cima do item, vindo de 35 cm acima, para não cortar a borda de um balcão; só para item mais de 45 cm abaixo dos olhos (numa prateleira alta, viria através da tábua de cima).
+2. Fechar a mão (0,15 s), parcialmente.
+3. Levantar com o item (0,45 s): o item sobe num arco de 10 cm e a mão gira de "palma sobre o item" para "segurando pela ponta" (palma na ponta direita, dedos atrás, polegar na frente, dedos 40° para cima seguindo o antebraço).
+
+- **Alcance:** só aparece "[E] Pegar" quando o pulso alcança o item (`PlayerBody.StoopFor`, interface `IReacher`). A profundidade é a menor que alcança. Agachando, o ombro fica sempre 15 cm acima do item: o corpo se inclina sobre um balcão, não para dentro dele. De pé, o braço alcança para cima, até 1,7 m (prateleira alta; achado do `reviewer`: antes, nada acima de 1,19 m podia ser pego, e o jogador podia deixar a fita lá). Os pontos do ombro e da cabeça em cada profundidade vêm da própria ação, amostrada em 9 pontos ao iniciar.
+- **Folga de 10 cm** (decisão do dono): com o ombro agachado a 47 cm do chão e o braço com 49 cm, a faixa de alcance no chão tinha poucos centímetros. O item pode deslizar até 10 cm para a mão enquanto ela fecha. Alcance medido: até 72 cm à frente num balcão de 1 m e até 57 cm no chão.
+- **O item nunca sai da mão:** onde o braço fica aquém do caminho (folga, meio da subida), o item vai para onde o pulso realmente está (a diferença do quadro anterior). No máximo 20 cm: girando muito durante a pegada, seguir a mão até o fim puxaria o item através dos móveis.
+- **Mira tolerante:** o raio de 2 m passa ao lado de coisas pequenas e não há mira na tela. Quando o raio não acerta nada utilizável, uma esfera de 8 cm percorre o mesmo caminho e aceita o primeiro objeto solto que tenha linha de visão.
+- **Segurando:** a fita fica 17° abaixo do centro da tela. Ela acompanha o olhar só entre 55° para baixo e 15° para cima (senão entraria na barriga ou sairia do alcance). A varredura que a afasta das paredes continua.
+
+**Corpo posicionado só no quadro de imagem:** posicionado também no tick de física, a mão ficava 3,5 cm atrás do item nos quadros com tick (tremia ao andar, 3,6 cm por quadro a 144 quadros por segundo). Os pés chutam da posição desenhada; abaixo de 60 quadros por segundo um chute pode sair um quadro atrasado. A lata foi chutada a 144, 60 e 30 quadros por segundo.
+
+**Como foi testado:** roteiros `--headless` (com `--fixed-fps 144` para quadros mais rápidos que a física, e 30 e 40 para mais lentos); medidas no sinal `skeleton_updated` (pose final, depois dos modificadores); 4 gravações com janela. Defeitos achados assim: braço que não alcançava o ponto de segurar; item na barriga; buraco do pescoço; mão esquerda acenando no agachamento; dedos atravessando a fita; pulso torcido; pulso entrando no caixote; tremor ao andar.
+
+**Limites:** a pegada pela ponta foi feita para a fita; um item muito diferente pode precisar de outra. A fita atravessou o chão uma vez no teste do dono e não se reproduziu em 8 tentativas.
 
 ## 5. Qualidade
 

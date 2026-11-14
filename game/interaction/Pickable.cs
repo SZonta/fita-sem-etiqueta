@@ -16,9 +16,20 @@ public partial class Pickable : RigidBody3D, IInteractable
     /// <summary>The solid outline of the object, in its own space.</summary>
     public Shape3D Shape => GetNode<CollisionShape3D>("CollisionShape3D").Shape;
 
+    /// <summary>Half the size of the box around <see cref="Shape"/>, along each of the object's own axes.</summary>
+    public Vector3 HalfSize { get; private set; }
+
+    public override void _Ready()
+    {
+        HalfSize = Shape.GetDebugMesh().GetAabb().Size / 2;
+    }
+
     public void Interact(Interactor interactor) => interactor.Hold(this);
 
-    /// <summary>Stops being a physics object and rides along with the holder.</summary>
+    /// <summary>
+    /// Stops being a physics object and rides along with the holder, staying where it is:
+    /// the holder moves it on from there.
+    /// </summary>
     public void AttachTo(Node3D holder)
     {
         _home = GetParent();
@@ -27,8 +38,7 @@ public partial class Pickable : RigidBody3D, IInteractable
         Freeze = true;
         CollisionLayer = 0; // Nothing bumps into it or aims at it while it is carried.
 
-        Reparent(holder, keepGlobalTransform: false);
-        Transform = Transform3D.Identity;
+        Reparent(holder);
     }
 
     /// <summary>Goes back to the world, falling from where it was held.</summary>
