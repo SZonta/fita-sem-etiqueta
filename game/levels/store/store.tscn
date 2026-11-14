@@ -1,0 +1,323 @@
+[gd_scene load_steps=9 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/store/store.gltf" id="1_store"]
+[ext_resource type="Material" path="res://levels/store/floor.tres" id="2_floor"]
+[ext_resource type="PackedScene" path="res://player/player.tscn" id="3_player"]
+[ext_resource type="PackedScene" path="res://vfx/vhs_filter.tscn" id="4_vhs_filter"]
+[ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="5_pause_menu"]
+[ext_resource type="PackedScene" path="res://props/tape.tscn" id="6_tape"]
+
+[sub_resource type="Environment" id="Environment_store"]
+background_mode = 1
+ambient_light_source = 2
+ambient_light_color = Color(1, 0.98, 0.92, 1)
+ambient_light_energy = 0.3
+
+[sub_resource type="FontVariation" id="FontVariation_sign"]
+variation_embolden = 0.6
+
+[node name="Store" type="Node3D"]
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("Environment_store")
+
+[node name="Model" parent="." instance=ExtResource("1_store")]
+
+[node name="Floor" parent="Model"]
+surface_material_override/0 = ExtResource("2_floor")
+
+[node name="LightFixtures" parent="Model"]
+cast_shadow = 0
+
+[node name="ReflectionProbe" type="ReflectionProbe" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.45, -3.4)
+size = Vector3(6, 2.9, 6.8)
+box_projection = true
+interior = true
+
+[node name="Lights" type="Node3D" parent="."]
+
+[node name="FrontLeft" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 2.7, -2)
+light_color = Color(0.93, 0.97, 1, 1)
+shadow_enabled = true
+omni_range = 5.0
+
+[node name="BackLeft" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.5, 2.7, -5)
+light_color = Color(0.93, 0.97, 1, 1)
+shadow_enabled = true
+omni_range = 5.0
+
+[node name="FrontRight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 2.7, -2)
+light_color = Color(0.93, 0.97, 1, 1)
+shadow_enabled = true
+omni_range = 5.0
+
+[node name="BackRight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, 2.7, -5)
+light_color = Color(0.93, 0.97, 1, 1)
+shadow_enabled = true
+omni_range = 5.0
+
+[node name="Adult" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.1, 2.7, -8.46)
+light_color = Color(0.93, 0.97, 1, 1)
+light_energy = 0.8
+shadow_enabled = true
+omni_range = 3.5
+
+[node name="Corridor" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.91, 2.7, -8.46)
+light_color = Color(0.93, 0.97, 1, 1)
+light_energy = 0.8
+shadow_enabled = true
+omni_range = 3.5
+
+[node name="Storage" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.81, 2.7, -8.46)
+light_color = Color(0.93, 0.97, 1, 1)
+light_energy = 0.8
+shadow_enabled = true
+omni_range = 3.5
+
+[node name="Signs" type="Node3D" parent="."]
+
+[node name="NewReleases" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.018, 2.25, -1.22)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_NEW_RELEASES"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Action" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.018, 2.25, -2.46)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_ACTION"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Adventure" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.018, 2.25, -3.7)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_ADVENTURE"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Thriller" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.018, 2.25, -4.94)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_THRILLER"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Horror" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0.018, 2.25, -6.18)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_HORROR"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Comedy" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.772, 1.75, -2.95)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_COMEDY"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Drama" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 1.772, 1.75, -4.45)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_DRAMA"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Kids" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 1.828, 1.75, -2.95)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_KIDS"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="Romance" type="Label3D" parent="Signs"]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 1.828, 1.75, -4.45)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.18, 0.1, 0.07, 1)
+text = "SIGN_GENRE_ROMANCE"
+font = SubResource("FontVariation_sign")
+font_size = 56
+outline_size = 0
+
+[node name="AdultsOnly" type="Label3D" parent="Signs"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.95, 2.45, -6.782)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.45, 0.05, 0.05, 1)
+text = "SIGN_ADULTS_ONLY"
+font = SubResource("FontVariation_sign")
+font_size = 26
+outline_size = 0
+
+[node name="RackLabels" type="Node3D" parent="."]
+
+[node name="NewReleases" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 1.53, -2.5455)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_NEW_RELEASES"
+font_size = 9
+outline_size = 0
+
+[node name="Action" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 1.53, -1.6545)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_ACTION"
+font_size = 9
+outline_size = 0
+
+[node name="Adventure" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 1.21, -2.5455)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_ADVENTURE"
+font_size = 9
+outline_size = 0
+
+[node name="Thriller" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 1.21, -1.6545)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_THRILLER"
+font_size = 9
+outline_size = 0
+
+[node name="Horror" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 0.89, -2.5455)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_HORROR"
+font_size = 9
+outline_size = 0
+
+[node name="Comedy" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 0.89, -1.6545)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_COMEDY"
+font_size = 9
+outline_size = 0
+
+[node name="Drama" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 0.56, -2.5455)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_DRAMA"
+font_size = 9
+outline_size = 0
+
+[node name="Romance" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 0.56, -1.6545)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_ROMANCE"
+font_size = 9
+outline_size = 0
+
+[node name="Kids" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 0.23, -2.5455)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_KIDS"
+font_size = 9
+outline_size = 0
+
+[node name="Adult" type="Label3D" parent="RackLabels"]
+transform = Transform3D(0, 0, -1, 0, 1, 0, 1, 0, 0, 5.695, 0.23, -1.6545)
+pixel_size = 0.002
+shaded = true
+alpha_cut = 1
+modulate = Color(0.1, 0.1, 0.1, 1)
+text = "SIGN_GENRE_ADULT"
+font_size = 9
+outline_size = 0
+
+[node name="TestTapes" type="Node3D" parent="."]
+
+[node name="OnCounter" parent="TestTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 4.3, 1.025, -2)
+
+[node name="RackLow" parent="TestTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.7575, 0.347, -1.65)
+
+[node name="RackHigh" parent="TestTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.7575, 1.647, -2.55)
+
+[node name="ReturnBoxA" parent="TestTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 4.0, 0.567, -0.17)
+
+[node name="ReturnBoxB" parent="TestTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0.866, -0.5, 0, 0, 0, 1, -0.5, -0.866, 0, 4.0, 0.595, -0.17)
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 0, -1)
+
+[node name="VhsFilter" parent="." instance=ExtResource("4_vhs_filter")]
+
+[node name="PauseMenu" parent="." instance=ExtResource("5_pause_menu")]
+
+[editable path="Model"]

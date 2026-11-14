@@ -40,10 +40,6 @@ public partial class PlayerController : CharacterBody3D
     // Height above the player's feet the reach check starts from: above the floor, below a low step.
     private const float KickReachHeight = 0.1f;
 
-    // Closest the camera comes to a wall when the head moves with a stoop, metres
-    // (twice the camera's near plane, so the wall is never cut open).
-    private const float HeadClearance = 0.1f;
-
     private Node3D _head = null!;
     private PlayerBody _body = null!;
     private Interactor _interactor = null!;
@@ -74,6 +70,7 @@ public partial class PlayerController : CharacterBody3D
 
         // The right hand holds whatever the interactor carries, and only what the body can reach.
         _body.SetHandTarget(_interactor.Grip);
+        _body.SetEyeHeight(_eyeHeight);
         _interactor.Body = _body;
 
         Input.MouseMode = Input.MouseModeEnum.Captured;
@@ -92,36 +89,21 @@ public partial class PlayerController : CharacterBody3D
     public override void _Process(double delta)
     {
         Vector3 feet = GetGlobalTransformInterpolated().Origin;
-        float stoop = _interactor.Depth * _interactor.Bend;
+        float bend = _interactor.Bend;
+        float stoop = _interactor.Depth * bend;
         Vector3 eyes = feet + Vector3.Up * _eyeHeight;
-        _head.GlobalPosition = eyes + HeadShift(eyes, new Basis(Vector3.Up, _yaw) * _body.HeadShift(stoop));
+
+        // Bending to pick something up, the camera goes where the stooping body's eyes are (the body
+        // stands under the eyes then), as much as the pose is the stoop: never behind the eyes, where it
+        // would see the neck. Where the head has no room, the body is pulled back instead.
+        Vector3 stooped = feet + new Basis(Vector3.Up, _yaw) * _body.EyesAt(stoop);
+        Vector3 shift = _body.HeadRoom(eyes, (stooped - eyes) * PlayerBody.StoopShare(bend), out Vector3 pulledBack);
+
+        _head.GlobalPosition = eyes + shift;
         _head.Rotation = new Vector3(_pitch, _yaw, 0);
-        _body.Place(feet, _yaw, _pitch, _interactor.Bend, delta);
-        _body.Stoop(stoop, _interactor.Bend);
+        _body.Place(feet, _yaw, _pitch, bend, pulledBack, delta);
+        _body.Stoop(stoop, bend);
         _body.PoseRightHand(_interactor.ArmReach, _interactor.HandClosed);
-    }
-
-    /// <summary>
-    /// The head goes down and forward with the body when stooping. Bending close to a wall,
-    /// it stops short of the wall instead of putting the camera through it.
-    /// </summary>
-    private Vector3 HeadShift(Vector3 eyes, Vector3 shift)
-    {
-        float length = shift.Length();
-        if (length < 0.001f)
-        {
-            return shift;
-        }
-
-        Vector3 way = shift / length;
-        var ray = PhysicsRayQueryParameters3D.Create(eyes, eyes + way * (length + HeadClearance), WorldMask);
-        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(ray);
-        if (hit.Count == 0)
-        {
-            return shift;
-        }
-
-        return way * Mathf.Max(0, eyes.DistanceTo((Vector3)hit["position"]) - HeadClearance);
     }
 
     public override void _PhysicsProcess(double delta)

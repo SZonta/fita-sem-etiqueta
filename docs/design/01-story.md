@@ -28,7 +28,7 @@ Em junho de 1996, o atendente de uma locadora do interior paulista descobre, fit
 - **Datas:** quinta 13, sexta 14 e sábado 15 de junho de 1996. Época de festa junina: bandeirinhas na rua, quermesse ao longe, rojões. Noites frias. No sábado chega uma frente fria com chuva. A quermesse traz gente de fora, por isso um rosto desconhecido não chama atenção.
 - **Cidade:** Dois Córregos, interior de São Paulo.
 - **Ambientes (3):**
-  1. **Astro Vídeo Locadora.** Térreo de um sobrado. Balcão, prateleiras por gênero, TV de teste com videocassete, rebobinadeira, caixa de devoluções na porta, seção adulta atrás de uma cortina, depósito nos fundos, porta de aço de enrolar.
+  1. **Astro Vídeo Locadora.** Térreo de um sobrado. Balcão, prateleiras por gênero (na prateleira, só a caixa com a capa; a fita fica na estante atrás do balcão), TV de teste com videocassete, rebobinadeira, fenda de devolução na parede da frente com bandeja por dentro, seção adulta atrás de uma cortina, depósito nos fundos, porta de aço de enrolar. Planta em `02-stack-architecture.md`, decisão da entrega 5.
   2. **A rua.** Um quarteirão. Bar e Lanchonete do Tião (mesa de sinuca, cadeiras de plástico na calçada), orelhão na esquina, poste de luz, bandeirinhas, latas, poças no sábado.
   3. **A quitinete.** Nos fundos do sobrado, acesso por um corredor lateral com portão. Um cômodo, banheiro, janela para o quintal, guarda-roupa, cama, fogareiro.
 

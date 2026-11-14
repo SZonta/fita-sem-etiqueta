@@ -107,7 +107,7 @@ Organização por funcionalidade, como pastas de feature em um projeto Next.js, 
 
 ## 3. Pipeline de arte
 
-1. **Cenário e objetos:** um script Python por objeto em `tools/blender/`, executado pelo Blender em modo de linha de comando. O script cria a geometria e o material procedural, assa a textura em PNG e exporta `.glb`. O modelo é reproduzível a partir do código, como infraestrutura como código.
+1. **Cenário e objetos:** um script Python por objeto em `tools/blender/`, executado pelo Blender em modo de linha de comando. O script cria a geometria e o material procedural, gera a textura em PNG e exporta `.glb` (objetos pequenos e personagens) ou glTF separado, `.gltf` + `.bin` + PNG (cenário com texturas grandes; decisão da entrega 5). O modelo é reproduzível a partir do código, como infraestrutura como código.
 2. **Personagens:** malha base do gerador, depois rosto, roupa e textura ajustados; esqueleto padrão; animações feitas por quadros-chave. Poucas animações por personagem: parado, falando com gesto, andando. O Freguês tem também procurar e correr.
 3. **Formato de troca:** glTF 2.0 (`.glb`), aberto e importado nativamente pelo Godot.
 4. **Áudio:** efeitos genéricos baixados de acervos CC0 (o agente de pesquisa indica a fonte e confere a licença de cada arquivo); "ruídos de fala" gravados pelo dono. Tudo editado no Audacity e exportado em OGG. Registro em `docs/credits.md`.
@@ -259,6 +259,36 @@ Feito em 2026-11-13 e 2026-11-14. O dono escolheu cada opção entre alternativa
 
 **Limites:** a pegada pela ponta foi feita para a fita; um item muito diferente pode precisar de outra. A fita atravessou o chão uma vez no teste do dono e não se reproduziu em 8 tentativas.
 
+### Decisão da entrega 5: a locadora
+
+Feito em 2026-11-14. O dono aprovou a planta antes da modelagem e a aparência jogando, com F5.
+
+**Planta** (interior 6,0 × 10,0 m, pé-direito 2,9 m; origem no canto interno frente-esquerda, no Godot x 0 a 6 e z 0 a -10):
+
+- Salão de 6,0 × 6,8 m: prateleiras de parede à esquerda (capas de frente), uma gôndola dupla no meio (dá a volta para se esconder no clímax), balcão à direita (1,0 m de altura, tampo de 60 cm, gaveta, vão embaixo), estante de fitas por gênero e móvel da TV de teste atrás dele.
+- Fundos: seção adulta atrás de uma cortina (2,2 × 3,1 m), corredor com a porta dos fundos para o quintal, depósito (2,4 × 3,1 m) com a porta atrás do balcão. A porta dos fundos não fica no depósito: na armadilha, o Freguês tem a chave e sairia por ela.
+- Porta de aço fechada (vão de 3,0 × 2,6 m); fenda de devolução na parede da frente a 0,95 m, com uma bandeja de madeira presa embaixo dela, por dentro (fundo a 0,55 m; frente e laterais de 10 cm; encosto alto atrás). Todas as passagens com 90 cm.
+- Exposição pela pesquisa do `researcher`: caixa vazia com a capa na prateleira e a fita guardada atrás do balcão. Na entrega 6, "guardar por gênero" acontece na estante atrás do balcão.
+- Placas de gênero com texto 3D (`Label3D`) por chave de tradução (`SIGN_*` em `ui.csv`), decisão do dono: quem joga em inglês ou espanhol também guarda por gênero.
+- Acabamentos: granilite com juntas a cada 1 m, látex creme com barrado verde-água a óleo até 1,2 m, laje branca com calhas fluorescentes, madeira e fórmica. Desgaste do piso por cor de vértice.
+
+**Pipeline:** `tools/blender/store.py` gera a geometria, as texturas (numpy, semente fixa) e as caixas de colisão (`-convcolonly`: o importador do Godot faz um corpo estático convexo de cada uma). Exportação em glTF separado (o `.glb` embutia os PNG e o Godot os extraía de novo: a mesma arte duas vezes no repositório, cerca de 8,5 MB por regeneração). Mipmaps e compressão de vídeo ligados à mão nos `.import` das texturas. Fitas e capas estáticas têm colisão em blocos (um por trecho contínuo por tábua): sem isso, uma fita solta na estante caía no meio delas e sumia.
+
+**Luz:** 7 `OmniLight3D` com sombra (uma por calha), luz ambiente 0,3, uma sonda de reflexo no salão. As calhas não projetam sombra: a luz fica logo abaixo delas, e cada uma desenhava uma faixa escura no teto.
+
+**Pegar (mudanças no `Interactor` e no `PlayerBody`):**
+
+- **Alcance:** a linha do ombro ao pulso, com a espessura do braço (esfera de 3 cm) e sem os últimos 6 cm (a mão entra num vão onde o antebraço não caberia), não pode atravessar a camada `world`. Recusa item atrás do balcão ou de uma grade. Um teste "por cima da borda" foi tentado e retirado: o braço real vai reto e atravessava a borda.
+- **Caminho do item:** com algo até 35 cm acima do item (tábua), a mão chega pela frente. O caminho até a mão é planejado na hora da pegada: arco para cima, ou puxar o item para fora até 40 cm, de 5 em 5 cm, antes de subir; cada opção é testada em 16 trechos (varredura com a forma do item e sobreposição no fim de cada trecho, porque a varredura não conta o giro), com 1 cm de folga. Durante a subida, uma guarda varre o movimento de cada quadro e o item para onde encosta. O deslizamento de até 10 cm até a mão também é varrido.
+- **A mão sobe antes de ir ao item:** parte de onde pendia, sobe até o início da aproximação (acima do item ou à frente dele) e só então vai até ele. Subindo direto do quadril, atravessava a quina do balcão.
+- **Cotovelo:** durante a pegada dobra para fora, na altura do ombro agachado; ao segurar, volta para baixo (pose aprovada na entrega 4). Para baixo, caía uns 13 cm sob a linha do braço e atravessava bordas.
+- **Câmera nos olhos da pose:** agachando, a câmera vai aos olhos do corpo agachado (12 cm à frente da cabeça, girando com ela), na mesma proporção em que a pose é a de agachar (`StoopShare`). Antes ia ao centro da cabeça, 12 cm atrás dos olhos, e via o peito e o pescoço.
+- **Cabeça sem espaço:** uma esfera de 10 cm percorre o caminho dos olhos (primeiro a descida, depois o avanço). O que a cabeça não consegue avançar, o corpo recua (`HeadRoom`, `pulledBack`), e o alcance (`StoopFor`) conta com esse recuo. Parar só a câmera deixava o corpo continuar e aparecer sem cabeça.
+
+**Medido sem janela, 16 pegadas e 16 solturas:** nenhum quadro com fita, câmera ou braço dentro do cenário, nem com o peito ou o pescoço à vista, exceto 2 quadros de pulso roçando as fitas vizinhas do vão da tábua de cima.
+
+**Desempenho:** cerca de 410 quadros por segundo a 1080p (Vulkan); Direct3D 12, cerca de 530. Fica o Vulkan; medir de novo na entrega 18.
+
 ## 5. Qualidade
 
 - Lógica de história coberta por testes xUnit (cada final, cada condição).
@@ -271,7 +301,7 @@ Feito em 2026-11-13 e 2026-11-14. O dono escolheu cada opção entre alternativa
 | Risco | Origem | Mitigação |
 |---|---|---|
 | Personagens semi-realistas são o item mais caro do projeto | Escolha do dono | Baixa resolução, filtro e pouca luz; poucas animações; primeiro personagem validado cedo no MVP |
-| Textura procedural pode parecer artificial em material brasileiro (chapisco, caquinho) | Escolha do dono | Validar uma parede e um piso na primeira entrega de cenário; se não convencer, reabrir a decisão |
+| Textura procedural pode parecer artificial em material brasileiro (chapisco, caquinho) | Escolha do dono | Parede e piso da locadora aprovados pelo dono na entrega 5, sob o filtro VHS. Chapisco e caquinho: conferir na entrega 8 |
 | Licença da malha base | Resolvido em 2026-11-12 | Assets do MPFB são CC0; só pacotes CC0 são usados (`docs/credits.md`) |
 | Scripts que usam a API do Blender teriam de ser GPL se publicados (FAQ do blender.org; questão jurídica aberta) | Descoberto na entrega 4 | Scripts num repositório privado; só os `.glb` vão para o público |
 | Repositório público expõe todos os assets | Requisito | Arte 100% própria. Áudio de terceiros somente CC0, que permite redistribuir. Sons de sites "gratuitos" com licença própria (que proíbem republicar o arquivo) ficam de fora |

@@ -56,6 +56,11 @@ public partial class PlayerBody : Node3D, IReacher
     private const string WristBone = "hand_r";
     private static readonly Vector3 ElbowPole = new(0.5f, 0.5f, 0.4f);
 
+    // Stooping to reach, the elbow bends out to the side instead, from the stooping shoulder: pointing
+    // down, it dipped below the edge the arm reaches over (a counter, the lip of a box, a shelf board).
+    private static readonly Vector3 ReachingElbowPole = new(0.5f, -0.05f, 0.2f);
+    private Node3D _pole = null!;
+
     // From the shoulder to the wrist with the arm straight, metres: as far as the wrist reaches.
     private const float ArmLength = 0.49f;
 
@@ -100,9 +105,31 @@ public partial class PlayerBody : Node3D, IReacher
     private HandAim _aim = null!;
     private FingerCurl _grip = null!;
 
-    // Where the right shoulder and the head are at each sampled depth of the stoop, in the body's own space.
+    // Where the right shoulder is, how the head is placed and turned, and where the eyes are,
+    // at each sampled depth of the stoop, in the body's own space.
     private readonly Vector3[] _stoopShoulder = new Vector3[StoopSamples];
-    private readonly Vector3[] _stoopHead = new Vector3[StoopSamples];
+    private readonly Transform3D[] _stoopHead = new Transform3D[StoopSamples];
+    private readonly Vector3[] _stoopEyes = new Vector3[StoopSamples];
+    private float _eyeHeight;
+
+    // A ball this wide around the camera is swept along the eyes' way when stooping, metres
+    // (twice the camera's near plane, so a wall is never cut open). A shelf board or a table top
+    // just off the straight line stops it too.
+    private const float HeadClearance = 0.1f;
+    private readonly PhysicsShapeQueryParameters3D _headSweep = new()
+    {
+        Shape = new SphereShape3D { Radius = HeadClearance },
+        CollisionMask = WorldMask,
+    };
+
+    // The arm is about this thick around the line from the shoulder to the wrist, metres;
+    // the last stretch before the wrist is not (see ClearReach).
+    private const float WristLength = 0.06f;
+    private readonly PhysicsShapeQueryParameters3D _armSweep = new()
+    {
+        Shape = new SphereShape3D { Radius = 0.03f },
+        CollisionMask = WorldMask,
+    };
 
     // Feet and turn of the last placement, for the reach check.
     private Vector3 _feetAt;
@@ -132,10 +159,11 @@ public partial class PlayerBody : Node3D, IReacher
     /// Stands the body under the eyes, turned with the view, behind them by an amount that depends on
     /// how far down the player looks (pitch in radians, negative is down). A wall behind or beside
     /// the body pushes it forwards, under the eyes, instead of letting it sink into the wall.
-    /// While bending to pick something up (bend 0 to 1), it moves right under the eyes: the camera
-    /// follows the head then, and the arm reaches as far as a real one.
+    /// While bending to pick something up (bend 0 to 1), it moves right under the eyes, and the arm
+    /// reaches as far as a real one; pulled back by as much as the head found no room for
+    /// (see <see cref="HeadRoom"/>), so the head stays where the camera is.
     /// </summary>
-    public void Place(Vector3 feet, float yaw, float pitch, float bend, double delta)
+    public void Place(Vector3 feet, float yaw, float pitch, float bend, Vector3 pulledBack, double delta)
     {
         var basis = new Basis(Vector3.Up, yaw);
         _feetAt = feet;
@@ -148,30 +176,91 @@ public partial class PlayerBody : Node3D, IReacher
 
         float wanted = Mathf.Lerp(AheadOffset, DownOffset, Mathf.SmoothStep(OffsetBlendStart, OffsetBlendEnd, pitch));
         wanted = Mathf.Lerp(wanted, 0, bend);
-        GlobalTransform = new Transform3D(basis, feet + clear.Normalized() * Mathf.Min(wanted, _room));
+        float back = Mathf.Min(wanted, _room);
+        // Pulled back no further than there is room behind, or the legs would go into the wall.
+        pulledBack = pulledBack.LimitLength(_room - back);
+        GlobalTransform = new Transform3D(basis, feet + clear.Normalized() * back - pulledBack);
+    }
+
+    /// <summary>
+    /// Sets how high the eyes are when standing, metres: where the camera is.
+    /// The eyes stooping are worked out from it.
+    /// </summary>
+    public void SetEyeHeight(float height)
+    {
+        _eyeHeight = height;
+        // Standing, the eyes are as far ahead of the body as it stands behind the camera looking ahead.
+        Vector3 inHead = _stoopHead[0].AffineInverse() * new Vector3(0, height, -AheadOffset);
+        for (int i = 0; i < StoopSamples; i++)
+        {
+            _stoopEyes[i] = _stoopHead[i] * inHead;
+        }
+    }
+
+    /// <summary>
+    /// Where the eyes are, stooped this deep, in the body's own space (x right, y up, z back),
+    /// as the head turns down with the back. While stooping, the camera is there.
+    /// </summary>
+    public Vector3 EyesAt(float depth) => Sample(_stoopEyes, depth);
+
+    /// <summary>
+    /// Moves the eyes by <paramref name="shift"/> as far as there is room for the head: down first, then
+    /// ahead. Returns how far they got. Whatever the head found no room for ahead, the body is pulled back
+    /// by, so the head stays with the eyes (instead of the camera stopping short and seeing the neck).
+    /// </summary>
+    public Vector3 HeadRoom(Vector3 eyes, Vector3 shift, out Vector3 pulledBack)
+    {
+        PhysicsDirectSpaceState3D space = GetWorld3D().DirectSpaceState;
+        pulledBack = Vector3.Zero;
+        _headSweep.Transform = new Transform3D(Basis.Identity, eyes);
+        _headSweep.Motion = shift;
+        if (space.CastMotion(_headSweep)[0] >= 1)
+        {
+            return shift;
+        }
+
+        var down = new Vector3(0, shift.Y, 0);
+        Vector3 ahead = shift - down;
+        _headSweep.Motion = down;
+        Vector3 lowered = eyes + down * space.CastMotion(_headSweep)[0];
+        _headSweep.Transform = new Transform3D(Basis.Identity, lowered);
+        _headSweep.Motion = ahead;
+        float aheadClear = space.CastMotion(_headSweep)[0];
+        pulledBack = ahead * (1 - aheadClear);
+        return lowered + ahead * aheadClear - eyes;
     }
 
     /// <summary>
     /// How deep the body has to stoop (0 standing to 1 deepest) for the right wrist to reach this point,
-    /// or -1 if it cannot. Measured from where the player stands now. The shallowest stoop that reaches
+    /// or -1 if it cannot. Measured from where the player stands now, with the body as it is placed while
+    /// reaching: under the eyes, pulled back where the head has no room. The shallowest stoop that reaches
     /// it exactly wins; failing that, the shallowest that comes within <paramref name="slack"/> of it.
     /// </summary>
     public float StoopFor(Vector3 point, float slack)
     {
-        // The point in the body's own space, with the body where it stands while reaching: under the eyes.
-        Vector3 local = _turn.Inverse() * (point - _feetAt);
+        Vector3 eyes = _feetAt + Vector3.Up * _eyeHeight;
         float nearly = -1;
         for (int i = 0; i < StoopSamples; i++)
         {
             // Stooping, the shoulder only gets lower: once it would dip below what the item lies on, give up.
             // Standing (the first sample) the arm may reach up, to a shelf above the shoulder.
-            if (i > 0 && _stoopShoulder[i].Y < local.Y + ShoulderAboveItem)
+            Vector3 shoulder = _feetAt + _turn * _stoopShoulder[i];
+            if (i > 0 && shoulder.Y < point.Y + ShoulderAboveItem)
             {
                 break;
             }
 
+            HeadRoom(eyes, _feetAt + _turn * _stoopEyes[i] - eyes, out Vector3 pulledBack);
+            shoulder -= pulledBack;
+
+            // The arm does not reach through a counter, a shelf, a grille or the side of a box.
+            if (!ClearReach(shoulder, point))
+            {
+                continue;
+            }
+
             float depth = i / (StoopSamples - 1f);
-            float distance = _stoopShoulder[i].DistanceTo(local);
+            float distance = shoulder.DistanceTo(point);
             if (distance <= ArmLength)
             {
                 return depth;
@@ -185,10 +274,17 @@ public partial class PlayerBody : Node3D, IReacher
     }
 
     /// <summary>
-    /// How far the head has moved, stooped this deep, from where it is standing,
-    /// in the body's own space (x right, y up, z back). The camera follows it.
+    /// True if the arm, as thick as it is, goes straight from the shoulder to the point (the wrist)
+    /// through nothing solid. The last few centimetres are left out: the wrist is thin, and the hand
+    /// slips into a gap the forearm would not fit (a tape on the top board, under the top of the rack).
     /// </summary>
-    public Vector3 HeadShift(float depth) => Sample(_stoopHead, depth) - _stoopHead[0];
+    private bool ClearReach(Vector3 shoulder, Vector3 point)
+    {
+        Vector3 way = point - shoulder;
+        _armSweep.Transform = new Transform3D(Basis.Identity, shoulder);
+        _armSweep.Motion = way - way.LimitLength(WristLength);
+        return GetWorld3D().DirectSpaceState.CastMotion(_armSweep)[0] >= 1;
+    }
 
     /// <summary>
     /// Bends down (depth 0 standing to 1 deepest). Weight 0 leaves the walk as it is;
@@ -197,8 +293,13 @@ public partial class PlayerBody : Node3D, IReacher
     public void Stoop(float depth, float weight)
     {
         _animation.Set(StoopSeek, depth);
-        _animation.Set(StoopBlend, Mathf.Min(1, weight / WalkFadeShare));
+        _animation.Set(StoopBlend, StoopShare(weight));
+        Vector3 reaching = Sample(_stoopShoulder, depth) + ReachingElbowPole;
+        _pole.Position = ElbowPole.Lerp(reaching, StoopShare(weight));
     }
+
+    /// <summary>How much of the pose is the stoop, for a weight given to <see cref="Stoop"/> (0 to 1).</summary>
+    public static float StoopShare(float weight) => Mathf.Min(1, weight / WalkFadeShare);
 
     /// <summary>
     /// Sweeps the body's outline from under the eyes to its spot furthest back. A wall in the way
@@ -301,8 +402,8 @@ public partial class PlayerBody : Node3D, IReacher
     /// </summary>
     private void AddRightHand(Skeleton3D skeleton)
     {
-        var pole = new Node3D { Name = "ElbowPole", Position = ElbowPole };
-        AddChild(pole);
+        _pole = new Node3D { Name = "ElbowPole", Position = ElbowPole };
+        AddChild(_pole);
 
         _reach = new TwoBoneIK3D { Name = "RightArmReach", Influence = 0 };
         skeleton.AddChild(_reach);
@@ -310,7 +411,7 @@ public partial class PlayerBody : Node3D, IReacher
         _reach.SetRootBoneName(0, ShoulderBone);
         _reach.SetMiddleBoneName(0, ElbowBone);
         _reach.SetEndBoneName(0, WristBone);
-        _reach.SetPoleNode(0, _reach.GetPathTo(pole));
+        _reach.SetPoleNode(0, _reach.GetPathTo(_pole));
 
         _aim = new HandAim { Name = "RightHandAim", Side = "r", Influence = 0 };
         skeleton.AddChild(_aim);
@@ -321,7 +422,7 @@ public partial class PlayerBody : Node3D, IReacher
 
     /// <summary>
     /// Plays the "stoop" action at evenly spaced depths and notes where the shoulder and the head go,
-    /// so <see cref="StoopFor"/> and <see cref="HeadShift"/> follow whatever the generator made.
+    /// so <see cref="StoopFor"/> and <see cref="EyesAt"/> follow whatever the generator made.
     /// </summary>
     private void SampleStoop(AnimationPlayer player, Skeleton3D skeleton, Node3D model)
     {
@@ -332,7 +433,7 @@ public partial class PlayerBody : Node3D, IReacher
         {
             player.Seek(i / (StoopSamples - 1.0), update: true);
             _stoopShoulder[i] = model.Transform * skeleton.GetBoneGlobalPose(shoulder).Origin;
-            _stoopHead[i] = model.Transform * skeleton.GetBoneGlobalPose(head).Origin;
+            _stoopHead[i] = model.Transform * skeleton.GetBoneGlobalPose(head);
         }
         player.Stop();
     }

@@ -1,0 +1,27 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://interaction/Pickable.cs" id="1_pickable"]
+[ext_resource type="PackedScene" path="res://assets/models/tape.glb" id="2_model"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_tape"]
+size = Vector3(0.19, 0.105, 0.025)
+
+[node name="Tape" type="RigidBody3D"]
+collision_layer = 4
+collision_mask = 5
+mass = 0.2
+continuous_cd = true
+script = ExtResource("1_pickable")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("BoxShape3D_tape")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+
+[node name="TapeGreen" parent="Model" index="1"]
+visible = false
+
+[node name="TapeRed" parent="Model" index="2"]
+visible = false
+
+[editable path="Model"]

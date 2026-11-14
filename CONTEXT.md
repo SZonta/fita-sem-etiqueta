@@ -3,18 +3,21 @@
 Fonte de verdade do projeto **Fita Sem Etiqueta**. Qualquer sessão nova começa lendo este arquivo.
 Atualizar SEMPRE antes de cada commit.
 
-Última atualização: 2026-11-14 (fim da Entrega 4, parte 2: mão).
+Última atualização: 2026-11-14 (fim da Entrega 5: a locadora).
 
 ## 1. Estado atual
 
 - **Etapa 1 (Pesquisa sobre Fears to Fathom):** concluída e aprovada em 2026-11-11.
 - **Etapa 2 (Planejamento):** concluída e aprovada em 2026-11-11.
-- **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12. Entrega 4 ("Corpo do Nondas") concluída em duas sessões: parte 1 (pernas) aprovada em 2026-11-13, **parte 2 (mão) aprovada em 2026-11-14**.
-- **Próxima entrega: 5, "A locadora"** (ver seção 9).
+- **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12. Entrega 4 ("Corpo do Nondas") concluída em duas sessões: parte 1 (pernas) aprovada em 2026-11-13, parte 2 (mão) aprovada em 2026-11-14. **Entrega 5 ("A locadora") aprovada em 2026-11-14.**
+- **Próxima entrega: 6, "As fitas"** (ver seção 9).
 - **Código de jogo:** projeto Godot em `game/`:
+  - `levels/store/store.tscn`: **a Astro Vídeo Locadora, cena principal (F5)**. Instancia o cenário (`assets/models/store/store.gltf`, filhos editáveis), 7 luzes com sombra, uma sonda de reflexo, as placas de gênero (`Label3D` com chave de tradução), o jogador, o filtro VHS, o menu de pausa e 5 fitas de teste (balcão, dois vãos da estante atrás do balcão, bandeja de devolução). `floor.tres` repete o material do piso ligando a cor de vértice (desgaste), que o importador de glTF deixa desligada.
   - `levels/test_room/test_room.tscn`: sala cinza de teste. Instancia o jogador, o filtro VHS e o menu de pausa. Tem uma lata vermelha, uma poça e uma caixa amarela do tamanho de uma fita VHS em cima do caixote, na borda (o braço alcança até uns 70 cm à frente).
+  - `props/tape.tscn`: fita VHS pegável (estojo preto, `assets/models/tape.glb`, adesivo dourado; as variantes verde e vermelha estão no modelo, escondidas).
+  - `assets/models/store/`: cenário da loja em glTF separado (`store.gltf`, `store.bin`, 12 texturas PNG). Gerado por `tools/blender/store.py`. 285 corpos de colisão convexos (camada `world`), cerca de 21 mil triângulos, 12 materiais.
   - `player/`: controlador de primeira pessoa (`PlayerController`). WASD anda a 2 m/s, mouse olha. A cena do jogador tem o corpo visível (`Body`, com o script `PlayerBody`), o raio de interação, o ponto da mão e a dica na tela.
-  - `player/PlayerBody.cs`: corpo do Nondas visto de dentro. Pernas e braços animados pela direção e pela velocidade; cabeça desenhada só como sombra; uma área do tamanho do sapato em cada pé, que chuta objetos soltos e faz a poça ondular. Fica 12 a 32 cm atrás da câmera conforme o olhar e é empurrado para baixo dela pelas paredes. Agacha para pegar coisas e estica o braço direito até elas.
+  - `player/PlayerBody.cs`: corpo do Nondas visto de dentro. Pernas e braços animados pela direção e pela velocidade; cabeça desenhada só como sombra; uma área do tamanho do sapato em cada pé, que chuta objetos soltos e faz a poça ondular. Fica 12 a 32 cm atrás da câmera conforme o olhar e é empurrado para baixo dela pelas paredes. Agacha para pegar coisas e estica o braço direito até elas; agachado, a câmera fica nos olhos da pose, e o corpo recua onde a cabeça não cabe.
   - `player/HandAim.cs` e `player/FingerCurl.cs`: modificadores de esqueleto que giram a mão e fecham os dedos, depois da cinemática inversa do braço.
   - `assets/models/nondas.glb`: modelo do Nondas (malha do MPFB, CC0), gerado por script do Blender que fica num repositório privado (ver seção 4, Licença).
   - `interaction/`: `Interactor` (raio da câmera com mira tolerante, tecla E; conduz a pegada: agachar, alcançar, fechar a mão, levantar, segurar pela ponta), interface `IInteractable`, `Pickable` (objeto que se pega e solta) e interface `IReacher` (o corpo que alcança, injetado pelo `PlayerController`).
@@ -82,7 +85,7 @@ Os três documentos abaixo são a referência completa. Esta seção é só o re
 | Assunto | Decisão |
 |---|---|
 | Motor e linguagem | Godot 4.7.2 (edição .NET) com C#. Projeto em `net10.0`, e não no `net8.0` padrão do Godot, porque o suporte ao .NET 8 terminou em 2026-11-10 |
-| Renderizador | Forward+ com o driver padrão (Vulkan). Cerca de 495 quadros por segundo a 1080p na sala de teste |
+| Renderizador | Forward+ com o driver padrão (Vulkan). Na locadora, com o corpo, 7 luzes com sombra e o filtro VHS: cerca de 410 quadros por segundo a 1080p (Direct3D 12: cerca de 530). Driver reavaliado na entrega 5: fica o Vulkan; medir de novo na entrega 18 |
 | Física | Jolt Physics (embutido no Godot) |
 | Estilo visual | Semi-realista sob filtro VHS, com resolução interna baixa (cerca de 480 linhas) |
 | Resolução interna | Só o 3D é reduzido (`Scaling3DScale` = 480 / altura da janela). Menus e textos ficam na resolução da janela, com esticamento `canvas_items` (base 1280x720) |
@@ -90,7 +93,8 @@ Os três documentos abaixo são a referência completa. Esta seção é só o re
 | Interpolação de física | Ligada. A cabeça do jogador é destacada do corpo e posicionada a cada quadro |
 | Camadas de física | 1 `world`, 2 `player`, 3 `props` (objetos soltos), 4 `feet` (pés do jogador). O jogador não colide com objetos soltos: ele os chuta com os pés. Tabela completa em `docs/design/02-stack-architecture.md` |
 | Corpo do jogador | Modelo próprio sobre a malha do MPFB, visível em primeira pessoa. Animações geradas por script (parado, andando nas 4 direções, agachar para pegar). Braço direito por cinemática inversa (`TwoBoneIK3D`). Detalhes em `docs/design/02-stack-architecture.md`, decisões da entrega 4 (partes 1 e 2) |
-| Interação | Tecla E. Raio de 2 m que sai da câmera, com uma esfera de 8 cm quando o raio não acerta; o alvo implementa `IInteractable`. Item solto só se pega se o braço alcança (agachando se preciso; o item desliza no máximo 10 cm até a mão). Um item na mão por vez, sem inventário. A dica na tela fica acima do filtro VHS |
+| Interação | Tecla E. Raio de 2 m que sai da câmera, com uma esfera de 8 cm quando o raio não acerta; o alvo implementa `IInteractable`. Item solto só se pega se o braço alcança (agachando se preciso; o item desliza no máximo 10 cm até a mão) e se a linha do ombro ao pulso não atravessa nada. O caminho do item até a mão é planejado e varrido: sob uma tábua, ele é puxado para fora antes de subir. Um item na mão por vez, sem inventário. A dica na tela fica acima do filtro VHS. Detalhes em `docs/design/02-stack-architecture.md`, decisão da entrega 5 |
+| Cenário | Gerado por script do Blender, exportado em **glTF separado** (`.gltf` + `.bin` + PNG), para textura que não muda não pesar de novo no histórico. Colisão feita de caixas nomeadas `-convcolonly` no próprio script. Texturas importadas com mipmaps e compressão de vídeo (ajuste feito à mão nos `.import`; sem isso o granilite cintila a 480 linhas) |
 | Cenário e objetos | 100% próprios, gerados por script Python no Blender. Texturas procedurais |
 | Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios. Licença confirmada em 2026-11-12: os assets do MPFB são CC0 (só os pacotes CC0 são usados); o código do complemento é GPLv3 e não vai para o jogo. Registro em `docs/credits.md` |
 | Áudio | Efeitos genéricos de acervos gratuitos, **somente licença CC0**, registrados em `docs/credits.md`. "Ruídos de fala" próprios |
@@ -206,6 +210,10 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **`--fixed-fps 144`** simula quadros mais rápidos que a física (quadros sem tick). Defeitos de ordem entre física e imagem (como o tremor da mão ao andar) só aparecem assim; com 60, cada quadro tem um tick e eles somem. Usar 30 ou 40 para quadros mais lentos que a física.
 - O `_process` de um roteiro que estende `SceneTree` roda antes do `_process` dos nós no mesmo quadro.
 - Nas gravações, o quadro logo depois de um salto de ângulo feito pelo roteiro (por exemplo de 0° a -60° num quadro) mostra uma transição; não julgar a aparência por ele.
+- **Na locadora, cada quadro gravado custa cerca de 0,4 s** (330 quadros levaram 2 min 12 s), contra 0,18 s na sala cinza. Estimar por 0,4 s ao pedir a liberação.
+- **Sem janela, o mouse não gira a câmera** (o modo capturado não existe). Para olhar para cima ou para baixo num roteiro: um nó auxiliar com `process_priority = 1` que escreve `Head.rotation.x` no `_process`, e o `Interactor` com `process_priority = 2`, mais a mesma escrita no sinal `physics_frame` do `SceneTree`. Só no tick de física não basta: no quadro de imagem o `PlayerController` volta a câmera ao ângulo dele, e o caminho do item é planejado com um olhar e executado com outro. O giro para os lados vem do `transform` do jogador antes de entrar na árvore.
+- Testes que encontraram defeitos na entrega 5 (roteiros descartáveis, fora do repositório): fita, câmera, ossos do braço (`upperarm_r`, `lowerarm_r`, `hand_r`, lidos no sinal `skeleton_updated`) e peito/pescoço (`spine_03`, `neck_01` dentro do cone da câmera) contra a camada `world`, quadro a quadro, em 16 pegadas e 16 solturas. Para ler propriedades C# do `Interactor` no roteiro: `get("Bend")`.
+- **Recriar a mesma cena muitas vezes num roteiro** (cerca de 12) gerou uma vez uma exceção da ponte C#/Godot no `_EnterTree` do `VhsFilter`. No jogo a cena carrega uma vez. Vigiar quando o `LevelLoader` recarregar fases (entrega 9).
 
 ### Blender (gerar modelos)
 
@@ -217,6 +225,9 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Ação nova estraga a primeira chave** se já existir uma faixa de NLA tocando: criar as faixas de NLA só depois de gravar todas as ações.
 - Ações que mexem nas costas (`stoop`) gravam também `spine_01` a `spine_03`; as outras ações gravam as costas retas (`stand_up_straight`), para não herdarem a pose da ação gravada antes.
 - **Conferir o pescoço:** render no Blender da câmera do jogo olhando para baixo, com o corpo a 11, 18, 24 e 32 cm, e a malha `Head` escondida. Foi assim que a tampa do pescoço foi validada sem abrir o jogo.
+- **Loja:** `tools/blender/store.py` (cerca de 5 s; `-- --preview <pasta>` renderiza 5 vistas da câmera do jogo em EEVEE). Importa as medidas da fita de `tape.py`. Dois rodadas seguidas geram arquivos idênticos.
+- **Ao regerar a loja, os `.import` das texturas não mudam** (mipmaps e compressão de vídeo foram ligados à mão). Textura NOVA nasce com o padrão do Godot (sem mipmaps): repetir o ajuste (`compress/mode=2`, `mipmaps/generate=true`, `detect_3d/compress_to=0`).
+- O importador de glTF do Godot 4.7.2 **não liga `vertex_color_use_as_albedo`** mesmo com a cor de vértice na malha. Por isso o piso tem o material `levels/store/floor.tres` por cima. Mudou o material do piso no Blender: atualizar o `.tres`.
 
 ### A instalar nas próximas entregas
 
@@ -243,17 +254,23 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Chute pelos pés:** a lata só voa quando o sapato encosta nela. Uma lata centrada entre os pés (30 cm de distância entre eles) não é chutada; as pernas passam por cima. O pé sobe 10 cm na passada e às vezes passa por cima da lata (12 cm), e quem chuta é o calcanhar, um pouco tarde. Se o dono reclamar: baixar a passada para 5 cm (mais realista) e ajustar o `TouchHeight` da poça junto.
 - **Passo para o lado:** o pé desliza cerca de 60%, porque o passo lateral é curto (para os pés não se cruzarem) e o ritmo é o da caminhada para a frente. O dono aprovou assim.
 - **`TouchHeight` da poça (10 cm):** objeto solto com centro acima de 10 cm (uma garrafa em pé, por exemplo) nunca faz a poça ondular. A altura é medida em metros no mundo, então a poça pode ser escalada.
-- **Quadros por segundo com o personagem:** não medidos. Medir na entrega 5, com a locadora.
+- **Quadros por segundo com o personagem (medido na entrega 5):** cerca de 410 na locadora, tela cheia 1080p, Vulkan. Direct3D 12 cerca de 530 (+30%; na sala vazia eram +19%). Fica o Vulkan (padrão mais testado do motor; desempenho sobra). Medir de novo na entrega 18, com o jogo inteiro.
 - **Cores e tom de pele do Nondas:** camiseta clara, jeans, Kichute preto, pele parda (escolhas do dono). As cores são provisórias e mudam numa linha do script. Ainda não há textura; o rosto não aparece.
-- **Textura procedural** pode parecer artificial em material brasileiro (chapisco, caquinho). Validar na entrega 5; se não convencer, reabrir a decisão com o dono.
+- **Textura procedural:** aprovada pelo dono na entrega 5 (granilite, barrado a óleo, látex, madeira, galvanizado), sob o filtro VHS. Chapisco e caquinho (rua, quintal) ainda não foram feitos; conferir na entrega 8.
 - **Todo objeto solto pequeno precisa de `continuous_cd`** (lata e fita já têm). No teste da entrega 1, objetos pequenos e rápidos atravessaram um piso fino nos dois motores de física.
 - **Todo objeto solto novo:** `collision_layer = 4` (camada 3, `props`) e `collision_mask = 5` (mundo e outros objetos). Na camada errada, o jogador volta a subir em cima dele.
 - **O jogador atravessa objetos soltos** (decisão da entrega 3). Um objeto que precise barrar o caminho deve ficar na camada `world`.
 - **Chute determinístico:** a lata tomba sempre para a frente e segue deitada. Se parecer repetitivo na rua (entrega 8), variar o giro.
-- **Lata e fita estão escritas dentro de `test_room.tscn`.** Viram cenas próprias quando forem usadas em outro lugar (fita na entrega 6, lata na 8).
+- **A fita virou cena própria** (`props/tape.tscn`) na entrega 5; a sala de teste ainda usa a dela, escrita dentro de `test_room.tscn`. A lata continua escrita lá e vira cena na entrega 8.
+- **5 fitas de teste na locadora** (`TestTapes` em `store.tscn`): servem para conferir o alcance. A entrega 6 as troca pelas fitas de verdade (caixa de devolução, rotina).
+- **Guardar a fita na estante** (mirar num vão, "[E] Guardar", a mão encaixa a fita em pé, lombada para fora): pedido do dono, deixado para a entrega 6 por decisão dele, junto com "guardar por gênero". Hoje só existe "Soltar": perto da estante, a fita cai no chão.
 - **Item na mão e troca de fase:** o `Pickable` guarda o pai original para voltar a ele ao ser solto. Se a fase for trocada com o item na mão, esse pai não existe mais: soltar lança erro e o `Interactor` fica preso em "Soltar" (achado do `reviewer`). No caso inverso, se o jogador for recarregado com o item na mão, o item é apagado junto, porque é filho do ponto da mão. Tratar os dois junto com o `LevelLoader`. Desde a parte 2, um item apagado enquanto está na mão é esquecido (`ForgetFreedItem`); o caso do pai original que não existe mais continua aberto.
-- **Regra de montagem de fase (alcance da mão, medido na entrega 4, parte 2):** item em cima de móvel a até uns 65 cm do eixo do jogador encostado (uns 30 cm da borda de um balcão de 1 m); no chão, até uns 50 cm à frente; em prateleira, até 1,7 m de altura. Fora disso o "[E] Pegar" não aparece. A fita da sala de teste foi movida para a borda do caixote por isso.
-- **Caminho do item não é varrido** (achado do `reviewer`): só a posição de segurar é afastada das paredes. Subindo de uma prateleira com tábua acima, ou de baixo de uma mesa, o item atravessa a tábua; e o alcance mede só a distância, então pega item atrás de um balcão baixo ou de uma grade (braço e tronco atravessam). Resolver na entrega 5, com as prateleiras de verdade: um raio do ombro até o item contra a camada `world` e uma varredura do caminho, ou recusar a pegada.
+- **Regra de montagem de fase (alcance da mão, medido na entrega 4, parte 2, e conferido na loja na entrega 5):** item em cima de móvel a até uns 65 cm do eixo do jogador encostado (uns 30 cm da borda de um balcão de 1 m); no chão, até uns 50 cm à frente; em prateleira, até 1,7 m de altura. Fora disso o "[E] Pegar" não aparece. Na loja: a tábua de cima da estante de fitas (1,55 m, fita em pé) só se alcança encostado na estante; a bandeja de devolução, a uns 30 cm dela.
+- **Regra de montagem: pelo menos 2 cm livres acima de item em prateleira** (achado do `reviewer` na entrega 5). As varreduras do Jolt ignoram o que já está sobreposto no ponto de partida; com uma tábua a menos de 2 cm, a mão não percebe a tábua e desce através dela. A fita em pé na tábua de cima da estante tem 4 cm.
+- **Guarda na subida:** se o caminho real se afasta do planejado (o jogador gira a vista durante a pegada), a fita para onde encostaria e só vai para a mão no fim da pegada (1,05 s), num salto. Não atravessa, mas o salto pode aparecer.
+- **Frestas que engolem fita:** a revisão achou e a entrega 5 fechou duas (3 cm de cada lado da porta dos fundos, que davam para fora do cenário; 10 cm entre a estante de fitas e o móvel da TV, que agora começa em z -3,0). Toda fresta entre móvel e parede ou entre móveis com 3 cm ou mais é um risco de softlock para a fita de missão (entrega 6): conferir ao montar fase.
+- **Estante: espaço entre tábuas.** Fita deitada no fundo da tábua de baixo (33 cm até a tábua de cima) quase não se vê de pé. As fitas ficam em pé, lombada para fora, na borda: assim se veem e se alcançam. Manter isso na entrega 6.
+- **Caminho do item (resolvido na entrega 5):** o alcance recusa item atrás de balcão ou grade (linha ombro→pulso com a espessura do braço); o caminho até a mão é planejado e varrido. Detalhes em `docs/design/02-stack-architecture.md`, decisão da entrega 5. Resta: na estante de cima, o pulso roça as fitas vizinhas do vão por 2 quadros (vão de 30 cm).
 - **Item que desliza até a mão** (decisão do dono): até 10 cm quando o braço fica aquém. Girando muito durante a pegada (1 s), o item segue a mão no máximo 20 cm e pode descolar dela por um instante.
 - **Pegada feita para a fita** (pela ponta, polegar na frente). Item de outro formato (lata, garrafa) pode precisar de outra pegada; a lata nem é `Pickable` hoje.
 - **Pulso ainda gira uns 40°** em relação ao antebraço ao segurar (o esqueleto não tem ossos de torção; o antebraço já assume 60%). O dono aprovou a aparência.
@@ -265,7 +282,7 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Dica acima do filtro VHS:** decisão minha, igual à do menu de pausa. O dono viu e não opinou.
 - **Objeto pequeno afunda alguns milímetros no piso** em repouso (tolerância de penetração padrão do Jolt, 2 cm). Não se vê a 480 linhas. Baixar `physics/jolt_physics_3d/simulation/penetration_slop` resolve, mas não foi adotado por ser um ajuste global sem necessidade visível.
 - **Teleporte do jogador (troca de fase, checkpoint):** com a interpolação ligada, chamar `ResetPhysicsInterpolation()` depois de mover o jogador, senão ele desliza de um ponto ao outro.
-- **Filtro VHS validado só na sala cinza e na página de teste.** A parte que o dono mais gostou (cor vazando) quase não aparece sem cor. Conferir de novo com ele na entrega 5, na locadora.
+- **Filtro VHS conferido na locadora (entrega 5):** o dono elogiou a loja com o filtro. Sem mudança.
 - **Defeitos fortes de fita** (faixa de tracking, riscos brancos, tremor): fora do filtro geral por escolha do dono. Candidatos para as fitas assistidas na TV (entrega 6). A receita está em `docs/design/02-stack-architecture.md` só como descrição; o código das opções recusadas não foi guardado.
 - **Menu de pausa acima do filtro:** decisão minha, para o menu continuar legível com o filtro no máximo. O dono não opinou. Inverter é trocar o número da camada.
 - **Filtro e menu instanciados em `test_room.tscn`:** quando o `LevelLoader` existir, eles precisam ficar num lugar que sobreviva à troca de fase.
@@ -278,11 +295,18 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
   - O jogo não pausa ao perder o foco da janela. Passa a importar quando houver ameaça (entrega 9).
 - **`settings.cfg` sem validação:** valores editados à mão fora da faixa entram como estão (por exemplo, sensibilidade 0). Mexer no controle corrige. Não tratado de propósito: só acontece editando o arquivo.
 - **Padrão do filtro: 0,7, decidido pelo dono em 2026-11-11.** No teste ele deixou o próprio controle em 0,3 e a sensibilidade em 0,8, mas escolheu manter o padrão do jogo. Não perguntar de novo.
-- **Cenas sem `uid`:** `player.tscn`, `test_room.tscn`, `vhs_filter.tscn`, `pause_menu.tscn` e `puddle.tscn` foram escritas à mão. Na primeira vez que o editor salvar, ele reescreve o cabeçalho; esse diff é esperado.
-- **Driver de vídeo:** o Direct3D 12 mediu 19% a mais que o Vulkan na sala vazia. Reavaliar na entrega 5, com uma cena de verdade.
+- **Cenas sem `uid`:** `player.tscn`, `test_room.tscn`, `vhs_filter.tscn`, `pause_menu.tscn`, `puddle.tscn`, `store.tscn` e `tape.tscn` foram escritas à mão. Na primeira vez que o editor salvar, ele reescreve o cabeçalho; esse diff é esperado.
+- **Locadora, peças estáticas para entregas futuras:**
+  - Porta de aço fechada (decisão do dono: a rua só existe na entrega 8). Abrir e baixar é missão da entrega 9.
+  - Porta do depósito aberta para dentro, com um engradado de calço e a maçaneta de dentro quebrada; porta dos fundos fechada, no corredor (não no depósito: na armadilha o Freguês, que tem a chave, sairia por ela). Ainda sem portas que se movem. O sentido de abertura da porta do depósito se decide na entrega 15 (armadilha).
+  - Vão livre sob o balcão (lado do atendente, 1,22 m × 0,9 m × 0,56 m) para o esconderijo da entrega 12, mas a colisão do corpo do balcão ainda é fechada.
+  - Sem colisão (decoração): caderno, fichário, rebobinadeira, caneta, cartazes, cortina, calhas, vassoura, mãos-francesas da bandeja.
+  - Etiquetas pequenas da estante de fitas ficam ilegíveis a 480 linhas; as placas grandes ficam legíveis.
+  - TV de teste: a tela é um objeto à parte (`TvScreen`, UV de 0 a 1 vista de frente), pronta para o vídeo da entrega 6.
+- **Fatos de época da loja (pesquisa da entrega 5, confiança média):** caixa vazia com a capa na prateleira; a fita ficava guardada atrás do balcão; estantes por gênero; ECA (1990) exigia respeitar a classificação etária. Sem fonte: cortina da seção adulta, fenda de devolução, piso, paredes (tratados como escolha de design).
 - **Exportação para Windows com `net10.0`:** não validada. Validar na entrega 19 (ou antes, se alguma entrega precisar exportar).
 - **Tamanhos de download** das ferramentas: confirmar na fonte no momento de pedir cada autorização.
-- **Fatos de época a verificar pelo `researcher`** (lista completa no fim de `docs/design/01-story.md`): Dois Córregos em 1996, orelhão (ficha ou cartão, ligação de emergência), preço de locação, filmadora doméstica e carimbo de data, viatura e farda da PM.
+- **Fatos de época a verificar pelo `researcher`** (lista completa no fim de `docs/design/01-story.md`): Dois Córregos em 1996 (já achado: 18.838 habitantes no Censo de 1991, 22.522 no de 2000; comércio do centro sem fonte), orelhão (ficha ou cartão, ligação de emergência), preço de locação, filmadora doméstica e carimbo de data, viatura e farda da PM.
 - **Taxa de publicação da Steam** (100 dólares por jogo, citada de memória): confirmar na página oficial antes da entrega 19.
 - **Nome do jogo:** a busca por jogos homônimos na Steam foi rápida. Não é verificação de marca registrada.
 - Os enredos dos episódios 2 e 3 de Fears to Fathom têm confiança média. Confirmar por gameplay antes de usar algum detalhe como referência direta.
@@ -290,15 +314,15 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 
 ## 9. Próxima entrega
 
-**Entrega 5: A locadora** (`docs/design/03-mvp.md`, marco 1).
+**Entrega 6: As fitas** (`docs/design/03-mvp.md`, marco 1). Coração do jogo.
 
-- O dono anda pela Astro Vídeo Locadora pronta: balcão, prateleiras por gênero, TV de teste com videocassete, porta de aço. Descrição completa em `docs/design/01-story.md` (térreo de um sobrado; rebobinadeira, caixa de devoluções na porta, seção adulta atrás de uma cortina, depósito nos fundos).
-- Valida a **textura procedural** (parede e piso). Se não convencer, a decisão é reaberta com o dono nesta entrega (seção 8).
-- Cenário gerado por script do Blender em `tools/blender/` (repositório privado), exportado em `.glb`. Coerência visual de uma cidade do interior paulista em 1996 (agente `artist`; fatos de época pelo `researcher`).
-- Pendências da seção 8 que caem nesta entrega: medir quadros por segundo com o personagem; reavaliar Direct3D 12 contra Vulkan; conferir o filtro VHS com cor (a sala cinza escondia quase todo o efeito); fitas e balcão na altura e na profundidade que o braço alcança.
-- Medidas que o cenário precisa respeitar: portas com 80 cm ou mais (cápsula de 60 cm); balcão e prateleiras com itens a até uns 70 cm da borda, a 1 m de altura (alcance medido na entrega 4, parte 2); item no chão a até uns 50 cm.
-- Fora desta entrega: fitas que se assistem (entrega 6), personagens e diálogo (7), rua e bar (8), som, sistema de ruído.
-- Pronto quando: o dono anda pela locadora no editor (F5) e aprova a aparência das paredes, do piso e dos móveis.
+- O dono esvazia a bandeja de devoluções, rebobina, assiste na TV de teste e guarda as fitas por gênero na estante atrás do balcão. A primeira fita adulterada aparece: depois dos créditos, cerca de 10 s da fachada da locadora filmada do outro lado da rua, à noite (`docs/design/01-story.md`, noite 1, item 3).
+- **Guardar na estante** (pedido do dono na entrega 5): mirar num vão, "[E] Guardar", a mão encaixa a fita em pé, lombada para fora, com animação. Usar o caminho planejado e varrido da pegada, ao contrário. As 5 fitas de teste de `store.tscn` saem.
+- Rebobinadeira e videocassete na loja: posições na seção 8 ("Locadora, peças estáticas"); a tela da TV é o objeto `TvScreen`.
+- **Decisões a levar ao dono antes de programar:** como produzir as imagens das fitas (vídeo pré-renderizado no Blender ou cena ao vivo num `SubViewport`); a fachada da loja ainda não existe (a rua é da entrega 8). Quais defeitos de fita entram só nas fitas assistidas (faixa de tracking, riscos, tremor: seção 8).
+- Fatos de época pelo `researcher` se a fita depender deles (filmadora doméstica e carimbo de data e hora, cópia para VHS; preço de locação).
+- Fora desta entrega: personagens e diálogo (7), rua e bar (8), escolha "gaveta ou prateleira" e estado da história (9), som, sistema de ruído.
+- Pronto quando: o dono, com F5, esvazia a bandeja, rebobina, assiste a uma fita normal e à adulterada, e guarda as fitas por gênero.
 
 ## 10. Release final (tarefas obrigatórias)
 

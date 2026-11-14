@@ -11,7 +11,7 @@ config_version=5
 [application]
 
 config/name="Fita Sem Etiqueta"
-run/main_scene="res://levels/test_room/test_room.tscn"
+run/main_scene="res://levels/store/store.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 
 [autoload]
