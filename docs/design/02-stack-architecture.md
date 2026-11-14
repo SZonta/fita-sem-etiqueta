@@ -10,7 +10,7 @@ Etapa 2 do projeto. Status: **aprovado pelo dono em 2026-11-11**, com um ajuste 
 | Linguagem | C# | Exige .NET SDK 8 ou superior (fonte: documentação oficial do Godot) |
 | Estilo visual | Semi-realista sob filtro VHS | Proporções reais, geometria moderada, textura de resolução modesta |
 | Cenário e objetos | 100% próprios, gerados por script no Blender | Texturas procedurais, sem fotos |
-| Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios | **Licença do gerador ainda não confirmada.** Confirmar antes de usar |
+| Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios | Licença confirmada em 2026-11-12: assets CC0, ver `docs/credits.md` |
 | Paçoca | Modelado do zero | |
 | Áudio | Bases existentes + edição própria | Efeitos genéricos (lata, latido, chuva, passos) vêm de acervos gratuitos. **Somente licença CC0**, porque o repositório é público e publicar o arquivo conta como redistribuição. Cada som é registrado com fonte e licença em `docs/credits.md`. Os "ruídos de fala" dos personagens são próprios |
 | Microfone | Opcional, desligado por padrão | Última entrega do MVP |
@@ -26,15 +26,15 @@ Etapa 2 do projeto. Status: **aprovado pelo dono em 2026-11-11**, com um ajuste 
 
 ### Ferramentas a instalar na Etapa 3
 
-Cada item exige autorização explícita do dono no momento da instalação, com tamanho confirmado na fonte. Os três primeiros foram instalados na entrega 1 (2026-11-11).
+Cada item exige autorização explícita do dono no momento da instalação, com tamanho confirmado na fonte. Os três primeiros foram instalados na entrega 1 (2026-11-11); Blender e MPFB na entrega 4 (2026-11-12).
 
 | Ferramenta | Origem oficial | Para quê | Tamanho |
 |---|---|---|---|
 | Godot 4.7.2, edição .NET (instalado) | godotengine.org | Motor do jogo | 111 MB |
 | .NET SDK 10.0.404, LTS (instalado) | dotnet.microsoft.com | Compilar o C# | 208 MB |
 | Extensão C# 2.160.4 para VS Code (instalada) | Marketplace do VS Code (Microsoft) | Autocompletar e depurar | 130 MB |
-| Blender (LTS atual) | blender.org | Modelos, rig, animação. Já inclui o Python usado pelos scripts | A confirmar |
-| MPFB (complemento do Blender) | makehumancommunity.org | Malha base dos humanos | A confirmar, junto com a licença |
+| Blender 5.2.4 LTS, zip portátil (instalado) | blender.org | Modelos, rig, animação. Já inclui o Python usado pelos scripts | 387 MiB |
+| MPFB 2.0.18, complemento do Blender (instalado) | extensions.blender.org (mantido pela comunidade MakeHuman) | Malha base dos humanos | 43,8 MiB |
 | Audacity | audacityteam.org | Cortar e tratar os sons baixados; gravar os "ruídos de fala" | A confirmar |
 
 ## 2. Arquitetura: o Godot traduzido para quem vem de C# e React
@@ -98,7 +98,8 @@ game/                 projeto Godot (project.godot e .csproj)
   assets/             models/, textures/, audio/, fonts/
   localization/       pt, en, es (CSV)
 tests/                xUnit para a lógica de história
-tools/blender/        scripts que geram cenário e objetos
+tools/blender/        scripts que geram cenário, objetos e personagens (repositório privado
+                      aninhado, ignorado pelo público; ver CONTEXT.md, Licença)
 docs/
 ```
 
@@ -174,12 +175,12 @@ Feito em 2026-11-12, na sala de teste, só com formas primitivas do Godot (sem B
 | Cenário (paredes, piso, móveis) | 1 `world` | (estático) |
 | Jogador (`CharacterBody3D`) | 2 `player` | 1 |
 | Objetos soltos (lata, fita) | 3 `props` | 1 e 3 |
-| Zona de chute do jogador (`KickZone`) | nenhuma | 3 |
+| Pés do jogador (entrega 4; substituíram a `KickZone`) | 4 `feet` | 3 |
 | Raio de interação (`Interactor`) | nenhuma | 1 e 3 |
-| Poça (`Area3D`) | nenhuma | 2 e 3 |
+| Poça (`Area3D`) | nenhuma | 3 e 4 (até a entrega 3: 2 e 3) |
 
 - **O jogador não colide com objetos soltos.** Na primeira versão colidia: o teste mostrou o jogador subindo 0,58 m em cima da lata espremida contra a parede, porque a cápsula escorrega por cima de objetos baixos. Agora ele passa por eles e os chuta.
-- **Chute** (`PlayerController.KickLooseObjects`): a `KickZone` é uma área na altura das pernas (cilindro de 0,3 m de raio, do piso até 0,5 m). Todo corpo rígido dentro dela recebe um impulso para longe do jogador, proporcional à velocidade com que jogador e objeto se aproximam (`KickStrength`, 1,8), mais um pequeno levantamento (`KickLift`) e um giro para a frente (`KickSpin`). Sem o giro, a lata deslizava em pé. A velocidade do jogador usada na conta é a que ele realmente andou: barrado por uma parede, ele não chuta um objeto parado. Um objeto que vem na direção do jogador parado é rebatido.
+- **Chute** (`PlayerController.KickLooseObjects`; na entrega 4 a zona deu lugar aos pés, ver abaixo): a `KickZone` é uma área na altura das pernas (cilindro de 0,3 m de raio, do piso até 0,5 m). Todo corpo rígido dentro dela recebe um impulso para longe do jogador, proporcional à velocidade com que jogador e objeto se aproximam (`KickStrength`, 1,8), mais um pequeno levantamento (`KickLift`) e um giro para a frente (`KickSpin`). Sem o giro, a lata deslizava em pé. A velocidade do jogador usada na conta é a que ele realmente andou: barrado por uma parede, ele não chuta um objeto parado. Um objeto que vem na direção do jogador parado é rebatido.
 - **Por que só as pernas:** com a zona do tamanho do corpo inteiro, soltar a fita andando para a frente a arremessava 2,25 m, porque o tronco a alcançava ainda no ar (achado do `reviewer`). Com a zona nas pernas ela cai reta.
 - **Objetos pequenos usam `continuous_cd`.** Lata (6,6 cm por 12,2 cm, 20 g) e fita (19 por 10,5 por 2,5 cm, 200 g).
 - **Poça** (`game/vfx/puddle.tscn`, `Puddle.cs`, `puddle.gdshader`): um plano com shader. O script guarda até 8 ondulações (posição e progresso de 0 a 1) e as envia ao shader a cada quadro enquanto houver alguma viva. Nasce uma ondulação onde um corpo entra na água e outra a cada 0,5 m andado dentro dela. O shader desenha cada uma como um trem curto de anéis que se afasta e some, inclina a superfície (o reflexo da lâmpada treme) e clareia as cristas. A malha continua plana. O material é local a cada cópia da cena, para que duas poças não ondulem juntas. Para uma poça maior, escalar o nó.
@@ -190,6 +191,40 @@ Feito em 2026-11-12, na sala de teste, só com formas primitivas do Godot (sem B
 - **Escala 3D:** o limite real do motor é 0,1 (conferido: pedir 0,2 devolve 0,2; pedir 0,05 devolve 0,1). O piso no código passou de 0,25 para 0,1. Em 4K o 3D fica com 480 linhas.
 - **Como foi testado sem o dono:** roteiros GDScript descartáveis rodados com `--headless --script`, que carregam a sala, simulam as teclas e imprimem posições. A física roda igual sem janela. Depois, uma execução com janela e `--write-movie` para conferir o shader e a aparência.
 - Limites: a ondulação nasce na posição do corpo, não de cada pé (não há pés até a entrega 4). A lata tomba sempre para a frente e segue deitada. Um objeto pequeno pode afundar alguns milímetros no piso em repouso (tolerância de penetração padrão do Jolt, 2 cm). Quadros por segundo não foram medidos de novo nesta entrega.
+
+### Decisão da entrega 4 (parte 1): corpo do Nondas
+
+Feito em 2026-11-12 e 2026-11-13. Primeiro personagem do pipeline. A mão que se estica fica para a parte 2.
+
+**Modelo** (`game/assets/models/nondas.glb`, gerado por `tools/blender/nondas_body.py`, repositório privado):
+
+- Malha base, alvos de forma e esqueleto `game_engine` do MPFB (CC0). Homem de 19 anos (`age` 0,366), magro, pele parda. Escalado para os olhos ficarem a 1,6 m, a altura da câmera.
+- Roupa pintada sobre a pele por região, pelo osso que mais move cada vértice: camiseta de manga curta, jeans, Kichute preto. Cada pano é estufado alguns milímetros na direção da normal.
+- **Sapato:** os pés da malha são trocados pelo casco convexo de cada pé, subdividido e suavizado, preso aos ossos do pé e dos dedos. Suavizar a própria malha do pé não apagou os dedos, e puxar os vértices para o casco criou pontas.
+- **Cabeça e pescoço** viram uma malha à parte (`Head`), desenhada no jogo só como sombra. A sombra no chão mostra o corpo inteiro.
+- O dono escolheu a roupa entre três opções renderizadas no Blender, da câmera do jogo, numa página de comparação: jeans e tênis, bermuda e chinelo, jeans e Kichute.
+
+**Animação** (gerada pelo script, sem quadros-chave à mão):
+
+- Cinco ações de 1 s: `idle`, `walk_forward`, `walk_backward` (a de frente tocada ao contrário), `walk_left` e `walk_right`.
+- Cada pé segue uma trajetória: no chão, desliza para trás em relação ao quadril, com o calcanhar subindo no fim; no ar, volta para a frente. O joelho sai de um cálculo de dois ossos (lei dos cossenos), dobrando para a frente. Quadril baixa e balança, braços pendem e balançam contra as pernas, palmas viradas para as coxas.
+- Para a frente o corpo anda 1,05 m por ciclo (`StrideLength` em `PlayerBody.cs`); o jogo toca o ciclo a `velocidade / 1,05` vezes por segundo, e o pé não desliza. Para o lado o passo é curto, para os pés não se cruzarem, e o pé desliza cerca de 60%.
+- No Godot, uma `AnimationTree` montada em código: um `BlendSpace2D` (como um joystick: direção de andar no espaço do jogador) com as cinco ações sincronizadas, seguido de um `TimeScale`. A direção é suavizada (10 por segundo), para a pose não pular ao trocar de tecla.
+
+**Na cena do jogador:**
+
+- O nó `Body` fica destacado do jogador (`top_level`, sem interpolação de física) e é posicionado a cada quadro com a rotação do mouse, como a cabeça. Girando a 60 ticks por segundo, as pernas ficariam atrasadas em relação à câmera ao girar olhando para baixo. Também é posicionado a cada tick de física, para pés e chute não usarem a posição antiga quando os quadros ficam mais lentos que a física (achado do `reviewer`).
+- O modelo fica 32 cm atrás da câmera. Mais perto, olhando para baixo, a câmera via o buraco do pescoço e o peito cobria metade da tela.
+- **Velocidade de andar: 3,0 → 2,0 m/s** (decisão do dono). A 3,0 m/s as pernas davam 5 passos por segundo.
+
+**Pés:** cada pé tem uma `Area3D` do tamanho do sapato (11 x 28 x 9 cm), presa ao osso por um `BoneAttachment3D`, na camada 4 `feet`, enxergando a camada 3 `props`.
+
+- **Chute pelos pés** (substitui a `KickZone` da entrega 3): com o cilindro em volta do jogador, a lata voava quando o pé visível ainda estava 15 a 40 cm atrás dela. Agora o objeto só é chutado quando um sapato encosta nele, na direção que sai do tornozelo. A força continua a da entrega 3 (velocidade real do jogador vezes `KickStrength`). Um raio do jogador até o objeto, contra a camada `world`, impede chutar através de parede: o corpo fica atrás da câmera, e o calcanhar alcança o outro lado de uma parede fina (achado do `reviewer`).
+- **Poça pelos pés:** a poça sente áreas além de corpos. Uma coisa só toca a água a menos de 10 cm de altura (`TouchHeight`, medida em metros mesmo com a poça escalada): pé no ar e lata voando não fazem ondulação. Resultado: uma ondulação por pisada, nascendo no pé.
+
+**Como foi testado:** roteiros `--headless --fixed-fps 60` (ondulações por pisada, chute por cada pé, lata entre os pés, fita solta andando, andar para os lados e para trás, lata atrás de parede fina) e uma gravação com janela de 240 quadros. Defeitos achados assim antes do dono jogar: a primeira chave de cada ação herdava a pose do `idle` (faixa de NLA tocando durante a gravação) e fazia o pé quicar e a poça ondular duas vezes; a perna se esticava 2 cm além do comprimento ao pisar.
+
+**Limites:** quadros por segundo não medidos; sem textura (cores lisas); a lata centrada entre os pés não é chutada; o calcanhar às vezes chuta a lata depois de o pé passar por cima dela.
 
 ## 5. Qualidade
 
@@ -204,6 +239,7 @@ Feito em 2026-11-12, na sala de teste, só com formas primitivas do Godot (sem B
 |---|---|---|
 | Personagens semi-realistas são o item mais caro do projeto | Escolha do dono | Baixa resolução, filtro e pouca luz; poucas animações; primeiro personagem validado cedo no MVP |
 | Textura procedural pode parecer artificial em material brasileiro (chapisco, caquinho) | Escolha do dono | Validar uma parede e um piso na primeira entrega de cenário; se não convencer, reabrir a decisão |
-| Licença da malha base não confirmada | Pendência | Confirmar na fonte oficial antes de qualquer uso; plano B: personagens próprios mais simples |
+| Licença da malha base | Resolvido em 2026-11-12 | Assets do MPFB são CC0; só pacotes CC0 são usados (`docs/credits.md`) |
+| Scripts que usam a API do Blender teriam de ser GPL se publicados (FAQ do blender.org; questão jurídica aberta) | Descoberto na entrega 4 | Scripts num repositório privado; só os `.glb` vão para o público |
 | Repositório público expõe todos os assets | Requisito | Arte 100% própria. Áudio de terceiros somente CC0, que permite redistribuir. Sons de sites "gratuitos" com licença própria (que proíbem republicar o arquivo) ficam de fora |
 | Escopo no teto: 6 personagens, armadilha, final secreto, microfone | Escolhas do dono | Ordem do MVP deixa armadilha, final secreto e microfone por último |

@@ -4,9 +4,9 @@ using Godot;
 namespace FitaSemEtiqueta.Vfx;
 
 /// <summary>
-/// A puddle on the floor. Any body that moves through the water leaves rings:
-/// one where it enters and one more for every stride after that.
-/// The Area3D shape is wider than the water; it only tells which bodies are near.
+/// A puddle on the floor. Loose objects and the player's feet leave rings where they touch
+/// the water: one where they come down and one more for every stride they slide after that.
+/// The Area3D shape is wider than the water; it only tells what is near.
 /// </summary>
 public partial class Puddle : Area3D
 {
@@ -19,11 +19,15 @@ public partial class Puddle : Area3D
     private const float StrideLength = 0.5f;
     private const float RippleSeconds = 1.6f;
 
+    // Anything higher above the water than this is not touching it: a foot in mid-step, a can in the air.
+    // A foot is measured at the ankle, about 7 cm up when it stands on the floor.
+    private const float TouchHeight = 0.1f;
+
     // For each ripple: X and Y are the spot on the puddle, Z goes from 0 (just made) to 1 (gone).
     private readonly Vector3[] _ripples = new Vector3[MaxRipples];
     private int _newest;
 
-    // Where each body in the water made its last ripple.
+    // Where each thing touching the water made its last ripple.
     private readonly Dictionary<Node3D, Vector2> _lastRipple = new();
 
     private ShaderMaterial _material = null!;
@@ -37,26 +41,45 @@ public partial class Puddle : Area3D
         _material.SetShaderParameter("ripples", _ripples);
 
         BodyExited += body => _lastRipple.Remove(body);
+        AreaExited += foot => _lastRipple.Remove(foot);
     }
 
     public override void _PhysicsProcess(double delta)
     {
+        if (!HasOverlappingBodies() && !HasOverlappingAreas())
+        {
+            return; // Nothing near: no lists to build. A street may have many puddles.
+        }
+
         foreach (Node3D body in GetOverlappingBodies())
         {
-            Vector3 local = ToLocal(body.GlobalPosition);
-            var spot = new Vector2(local.X, local.Z);
+            Touch(body);
+        }
 
-            if (spot.Length() > Radius)
-            {
-                _lastRipple.Remove(body); // Near the puddle, but on dry floor.
-                continue;
-            }
+        foreach (Node3D foot in GetOverlappingAreas())
+        {
+            Touch(foot);
+        }
+    }
 
-            if (!_lastRipple.TryGetValue(body, out Vector2 last) || spot.DistanceTo(last) >= StrideLength)
-            {
-                _lastRipple[body] = spot;
-                AddRipple(spot);
-            }
+    private void Touch(Node3D thing)
+    {
+        Vector3 local = ToLocal(thing.GlobalPosition);
+        var spot = new Vector2(local.X, local.Z);
+
+        // Height in metres even on a scaled puddle (local.Y would be divided by the scale).
+        float height = (thing.GlobalPosition - GlobalPosition).Dot(GlobalBasis.Y.Normalized());
+
+        if (spot.Length() > Radius || height > TouchHeight)
+        {
+            _lastRipple.Remove(thing); // Near the puddle, but on dry floor or above the water.
+            return;
+        }
+
+        if (!_lastRipple.TryGetValue(thing, out Vector2 last) || spot.DistanceTo(last) >= StrideLength)
+        {
+            _lastRipple[thing] = spot;
+            AddRipple(spot);
         }
     }
 

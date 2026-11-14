@@ -1,6 +1,9 @@
 # Godot: import cache and C# build output (game/.godot/mono/temp)
 .godot/
 
+# Blender scripts that generate the art: their own private repository, nested here.
+tools/blender/
+
 # .NET
 bin/
 obj/

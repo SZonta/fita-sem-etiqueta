@@ -66,6 +66,7 @@ locale/translations=PackedStringArray("res://localization/ui.en.translation", "r
 3d_physics/layer_1="world"
 3d_physics/layer_2="player"
 3d_physics/layer_3="props"
+3d_physics/layer_4="feet"
 
 [physics]
 

@@ -12,11 +12,12 @@ This repository uses two licenses:
 ## What "everything else" covers
 
 - 3D models, textures, materials, animations, fonts and audio.
-- The Blender scripts in `tools/blender/`, because they are the source of the art.
 - Scene and level files.
 - Game text and translations.
 - Story, characters, dialogue and the design documents in `docs/`.
 - The name "Fita Sem Etiqueta" and any logo or key art.
+
+The Blender scripts that generate the art are not part of this repository.
 
 You may view this content to study the project. You may not redistribute,
 modify, republish or use it commercially without written permission from the

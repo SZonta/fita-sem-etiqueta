@@ -17,8 +17,9 @@ Você é o artista técnico do projeto. Leia `CONTEXT.md`, `docs/design/01-story
 ## Como trabalhar
 
 - Um script Python por objeto em `tools/blender/`, executável pelo Blender em linha de comando. O script cria a geometria, o material procedural, assa a textura em PNG e exporta `.glb` para `game/assets/models/`.
+- `tools/blender/` é um repositório git **privado** à parte, aninhado e ignorado pelo repositório público. Nunca copie um script para fora dele. O Blender e o MPFB estão instalados (caminho e comando na seção 6 do `CONTEXT.md`). Exemplo pronto: `tools/blender/nondas_body.py`.
 - O modelo precisa ser reproduzível: rodar o script de novo gera o mesmo arquivo.
-- Arte 100% própria. Nenhum modelo ou textura de terceiros. Exceção já aprovada pelo dono: a malha base dos personagens humanos vem de um gerador gratuito, e só depois de a licença ser confirmada.
+- Arte 100% própria. Nenhum modelo ou textura de terceiros. Exceção já aprovada pelo dono: a malha base dos personagens humanos vem do MPFB (licença CC0 confirmada; usar só pacotes CC0 e registrar em `docs/credits.md`).
 - Escala: 1 unidade = 1 metro. Origem do objeto na base. Nomes de arquivos, objetos e materiais em inglês.
 - Nunca instale nem baixe nada. Se precisar de uma ferramenta ou complemento, diga o que é, de onde vem, o tamanho e o motivo, e pare.
 

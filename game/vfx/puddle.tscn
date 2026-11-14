@@ -16,7 +16,7 @@ size = Vector2(2, 2)
 
 [node name="Puddle" type="Area3D"]
 collision_layer = 0
-collision_mask = 6
+collision_mask = 12
 script = ExtResource("1_script")
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="."]

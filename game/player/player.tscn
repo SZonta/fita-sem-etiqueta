@@ -1,15 +1,13 @@
-[gd_scene load_steps=5 format=3]
+[gd_scene load_steps=6 format=3]
 
 [ext_resource type="Script" path="res://player/PlayerController.cs" id="1_controller"]
 [ext_resource type="Script" path="res://interaction/Interactor.cs" id="2_interactor"]
+[ext_resource type="Script" path="res://player/PlayerBody.cs" id="3_body"]
+[ext_resource type="PackedScene" path="res://assets/models/nondas.glb" id="4_model"]
 
 [sub_resource type="CapsuleShape3D" id="CapsuleShape3D_body"]
 radius = 0.3
 height = 1.8
-
-[sub_resource type="CylinderShape3D" id="CylinderShape3D_legs"]
-height = 0.5
-radius = 0.3
 
 [node name="Player" type="CharacterBody3D"]
 collision_layer = 2
@@ -19,13 +17,11 @@ script = ExtResource("1_controller")
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.9, 0)
 shape = SubResource("CapsuleShape3D_body")
 
-[node name="KickZone" type="Area3D" parent="."]
-collision_layer = 0
-collision_mask = 4
+[node name="Body" type="Node3D" parent="."]
+script = ExtResource("3_body")
 
-[node name="CollisionShape3D" type="CollisionShape3D" parent="KickZone"]
-transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.25, 0)
-shape = SubResource("CylinderShape3D_legs")
+[node name="Model" parent="Body" instance=ExtResource("4_model")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0.32)
 
 [node name="Head" type="Node3D" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.6, 0)

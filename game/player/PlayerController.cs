@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using FitaSemEtiqueta.Core;
 using Godot;
 
@@ -9,7 +10,7 @@ namespace FitaSemEtiqueta.Player;
 /// </summary>
 public partial class PlayerController : CharacterBody3D
 {
-    [Export] public float WalkSpeed { get; set; } = 3.0f;
+    [Export] public float WalkSpeed { get; set; } = 2.0f;
 
     /// <summary>
     /// Radians of rotation per pixel of mouse movement, before the player's
@@ -32,8 +33,15 @@ public partial class PlayerController : CharacterBody3D
     // Tumble given by a kick: radians per second of spin for each metre per second of kick.
     private const float KickSpin = 4f;
 
+    // Physics layer 1: walls, floor and furniture.
+    private const uint WorldMask = 1;
+
+    // Height above the player's feet the reach check starts from: above the floor, below a low step.
+    private const float KickReachHeight = 0.1f;
+
     private Node3D _head = null!;
-    private Area3D _kickZone = null!;
+    private PlayerBody _body = null!;
+    private readonly HashSet<RigidBody3D> _kicked = new();
     private float _eyeHeight;
     private float _yaw;
     private float _pitch;
@@ -41,7 +49,7 @@ public partial class PlayerController : CharacterBody3D
     public override void _Ready()
     {
         _head = GetNode<Node3D>("Head");
-        _kickZone = GetNode<Area3D>("KickZone");
+        _body = GetNode<PlayerBody>("Body");
         _eyeHeight = _head.Position.Y;
         _yaw = GlobalRotation.Y;
 
@@ -49,8 +57,13 @@ public partial class PlayerController : CharacterBody3D
         // The view has to follow the mouse on every frame instead, so the head is
         // detached from the body and placed by hand in _Process
         // (first-person pattern from the Godot physics interpolation docs).
-        _head.TopLevel = true;
-        _head.PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
+        // The visible body turns with the view too: turning on physics ticks,
+        // the legs would trail behind the camera when looking down and turning fast.
+        foreach (Node3D part in new[] { _head, _body })
+        {
+            part.TopLevel = true;
+            part.PhysicsInterpolationMode = PhysicsInterpolationModeEnum.Off;
+        }
 
         Input.MouseMode = Input.MouseModeEnum.Captured;
     }
@@ -67,8 +80,15 @@ public partial class PlayerController : CharacterBody3D
 
     public override void _Process(double delta)
     {
-        _head.GlobalPosition = GetGlobalTransformInterpolated().Origin + Vector3.Up * _eyeHeight;
+        Vector3 feet = GetGlobalTransformInterpolated().Origin;
+        _head.GlobalPosition = feet + Vector3.Up * _eyeHeight;
         _head.Rotation = new Vector3(_pitch, _yaw, 0);
+        PlaceBody(feet);
+    }
+
+    private void PlaceBody(Vector3 feet)
+    {
+        _body.GlobalTransform = new Transform3D(new Basis(Vector3.Up, _yaw), feet);
     }
 
     public override void _PhysicsProcess(double delta)
@@ -90,45 +110,68 @@ public partial class PlayerController : CharacterBody3D
 
         Velocity = velocity;
         MoveAndSlide();
+
+        // Also placed here, not only in _Process: when frames run slower than physics ticks,
+        // the feet would otherwise kick and splash from where the player was a tick ago.
+        PlaceBody(GlobalPosition);
         KickLooseObjects();
+
+        // What the player really moved: walking into a wall, the legs stand still.
+        _body.Walk(GlobalBasis.Inverse() * GetRealVelocity(), delta);
     }
 
     /// <summary>
     /// The player's body does not collide with loose objects: it would get stuck on
-    /// them, or climb them. They are knocked away instead, as soon as they touch the
-    /// kick zone, an area around the legs: an object let go at chest height
-    /// falls through the body untouched.
+    /// them, or climb them. They are knocked away instead, as soon as a foot touches
+    /// them: an object let go at chest height falls through the body untouched,
+    /// and one between the feet is stepped over.
     /// </summary>
     private void KickLooseObjects()
     {
-        foreach (Node3D node in _kickZone.GetOverlappingBodies())
+        _kicked.Clear();
+        foreach (Area3D foot in _body.Feet)
         {
-            if (node is not RigidBody3D body)
+            foreach (Node3D node in foot.GetOverlappingBodies())
             {
-                continue;
+                if (node is RigidBody3D body && _kicked.Add(body))
+                {
+                    Kick(body, foot.GlobalPosition);
+                }
             }
-
-            Vector3 away = body.GlobalPosition - GlobalPosition;
-            away.Y = 0; // Standing over an object must not press it into the floor.
-            if (away.IsZeroApprox())
-            {
-                continue;
-            }
-            away = away.Normalized();
-
-            // Velocity is what the player really moved: zero against a wall,
-            // so an object caught between player and wall is not hammered into it.
-            float closingSpeed = (Velocity - body.LinearVelocity).Dot(away);
-            if (closingSpeed <= 0)
-            {
-                continue; // The player is not walking into it, or it is already faster.
-            }
-
-            float kickSpeed = closingSpeed * KickStrength;
-            body.ApplyCentralImpulse((away + Vector3.Up * KickLift) * kickSpeed * body.Mass);
-
-            // Topples forward, as if hit above its middle. Without the spin a can slides away standing up.
-            body.AngularVelocity = Vector3.Up.Cross(away) * kickSpeed * KickSpin;
         }
+    }
+
+    /// <summary>Knocks a loose object away from the foot (at the ankle) that touched it.</summary>
+    private void Kick(RigidBody3D body, Vector3 ankle)
+    {
+        // The model stands behind the camera, so walking backwards the heels can reach
+        // through a thin wall. Nothing is kicked that the player could not reach.
+        var reach = PhysicsRayQueryParameters3D.Create(GlobalPosition + Vector3.Up * KickReachHeight, body.GlobalPosition, WorldMask);
+        if (GetWorld3D().DirectSpaceState.IntersectRay(reach).Count > 0)
+        {
+            return;
+        }
+
+        Vector3 away = body.GlobalPosition - ankle;
+        away.Y = 0; // Standing over an object must not press it into the floor.
+        if (away.IsZeroApprox())
+        {
+            return;
+        }
+        away = away.Normalized();
+
+        // Velocity is what the player really moved: zero against a wall,
+        // so an object caught between player and wall is not hammered into it.
+        float closingSpeed = (Velocity - body.LinearVelocity).Dot(away);
+        if (closingSpeed <= 0)
+        {
+            return; // The player is not walking into it, or it is already faster.
+        }
+
+        float kickSpeed = closingSpeed * KickStrength;
+        body.ApplyCentralImpulse((away + Vector3.Up * KickLift) * kickSpeed * body.Mass);
+
+        // Topples forward, as if hit above its middle. Without the spin a can slides away standing up.
+        body.AngularVelocity = Vector3.Up.Cross(away) * kickSpeed * KickSpin;
     }
 }
