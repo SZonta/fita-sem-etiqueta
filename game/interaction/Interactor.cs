@@ -10,14 +10,17 @@ namespace FitaSemEtiqueta.Interaction;
 /// </summary>
 public partial class Interactor : RayCast3D
 {
-    /// <summary>Emitted with the translation key of the hint to show, or "" for none.</summary>
-    [Signal] public delegate void PromptChangedEventHandler(string key);
+    /// <summary>Emitted with the hint to show: a translation key, text already translated, or "" for none.</summary>
+    [Signal] public delegate void PromptChangedEventHandler(string text);
 
     // Physics layer 1: walls, floor and furniture.
     private const uint WorldMask = 1;
 
     // Physics layer 3: loose objects.
     private const uint PropsMask = 4;
+
+    // Physics layer 5: places a carried item can be put (see IReceiver).
+    private const uint SlotsMask = 16;
 
     // How far off the exact line of sight something can be and still be aimed at, metres.
     private const float AimRadius = 0.08f;
@@ -100,6 +103,12 @@ public partial class Interactor : RayCast3D
     private ShapeCast3D _wideAim = null!;
     private Transform3D _holdRest;
     private Pickable? _held;
+    // Where the item in hand is being put, while it is; null otherwise.
+    private IReceiver? _receiver;
+
+    // True while watching, as of the last physics tick: the "interact" press that stops watching
+    // must not also be read here (the viewer reads it first, in the same tick).
+    private bool _wasWatching;
     private PhysicsShapeQueryParameters3D _sweep = null!;
     private string _prompt = "";
 
@@ -124,6 +133,9 @@ public partial class Interactor : RayCast3D
     /// <summary>The body whose hand picks things up, given by whoever owns it. Without it, nothing can be picked up.</summary>
     public IReacher? Body { get; set; }
 
+    /// <summary>Who stops to watch the test TV, given by whoever owns it. While watching, nothing is aimed at.</summary>
+    public IViewer? Viewer { get; set; }
+
     /// <summary>Where the right wrist goes, turned as the hand should be (Y along the fingers, Z out of the palm).</summary>
     public Node3D Grip { get; } = new()
     {
@@ -146,11 +158,14 @@ public partial class Interactor : RayCast3D
     /// <summary>How far through bending down and up again: 0 upright, 1 down at <see cref="Depth"/>.</summary>
     public float Bend { get; private set; }
 
-    /// <summary>True while picking something up: the player stands still meanwhile.</summary>
-    public bool Busy => _held != null && !InHand;
+    /// <summary>True while picking something up or putting it somewhere: the player stands still meanwhile.</summary>
+    public bool Busy => _held != null && (!InHand || _receiver != null);
+
+    // From reaching for an item to having it up in the hand, seconds. Putting it somewhere plays it backwards.
+    private const float TakeTime = ReachTime + CloseTime + LiftTime;
 
     // True once the item is up in the hand. Until then it cannot be let go.
-    private bool InHand => _clock >= ReachTime + CloseTime + LiftTime;
+    private bool InHand => _clock >= TakeTime;
 
     public override void _Ready()
     {
@@ -170,30 +185,126 @@ public partial class Interactor : RayCast3D
     public override void _PhysicsProcess(double delta)
     {
         ForgetFreedItem();
-        IInteractable? target = _held == null ? Aimed() : null;
+        bool wasWatching = _wasWatching;
+        _wasWatching = Viewer?.Watching == true;
+        if (_wasWatching || wasWatching)
+        {
+            // The viewer takes the "interact" action to stop watching.
+            SetPrompt(_wasWatching ? "INTERACT_STOP" : "");
+            return;
+        }
+
+        if (_held != null)
+        {
+            Carry();
+            return;
+        }
+
+        IInteractable? target = Aimed();
 
         // Only what the hand can reach from here, and not while the arm is still dropping back.
-        if (target is Pickable item && (ArmReach > 0 || StoopFor(item) < 0))
+        if (target is Pickable item && (ArmReach > 0 || StoopFor(item.GlobalTransform, item.HalfSize) < 0))
         {
             target = null;
         }
 
-        SetPrompt(_held == null ? target?.PromptKey ?? "" : InHand ? "INTERACT_DROP" : "");
+        SetPrompt(target?.PromptKey ?? "");
+        if (Input.IsActionJustPressed("interact"))
+        {
+            target?.Interact(this);
+        }
+    }
 
+    /// <summary>
+    /// With the item up in the hand: puts it where the player aims, if it goes there and the hand reaches;
+    /// says so if it does not go there; otherwise lets it go. The hint also tells what the item is.
+    /// </summary>
+    private void Carry()
+    {
+        if (!InHand || _receiver != null)
+        {
+            SetPrompt("");
+            return;
+        }
+
+        Pickable item = _held!;
+        string action = Tr("INTERACT_DROP");
+        bool drop = true;
+        Transform3D? spot = null;
+        (IReceiver? receiver, Vector3 aimedAt) = AimedReceiver();
+        if (receiver != null)
+        {
+            if (receiver.Accepts(item, out string hint))
+            {
+                spot = receiver.SpotFor(item, aimedAt);
+                if (spot is Transform3D at && StoopFor(at, item.HalfSize) >= 0)
+                {
+                    action = hint;
+                }
+                else
+                {
+                    // No room there, or out of reach: nothing to do, and the item is not dropped on top.
+                    spot = null;
+                    action = "";
+                }
+                drop = false;
+            }
+            else if (hint != "")
+            {
+                // It does not go here (a shelf of another genre): the hint says so, and nothing happens.
+                action = hint;
+                drop = false;
+            }
+        }
+
+        string caption = item.Caption;
+        SetPrompt(caption == "" || action == "" ? caption + action : caption + "\n" + action);
         if (!Input.IsActionJustPressed("interact"))
         {
             return;
         }
 
-        if (_held == null)
+        if (spot is Transform3D target)
         {
-            target?.Interact(this);
+            Put(receiver!, target);
         }
-        else if (InHand)
+        else if (drop)
         {
-            _held.Release();
+            item.Release();
             _held = null;
         }
+    }
+
+    /// <summary>The place the item in hand could be put that the player looks at, and the point looked at.</summary>
+    private (IReceiver?, Vector3) AimedReceiver()
+    {
+        var query = PhysicsRayQueryParameters3D.Create(GlobalPosition, ToGlobal(TargetPosition), WorldMask | SlotsMask);
+        query.CollideWithAreas = true;
+        Godot.Collections.Dictionary hit = GetWorld3D().DirectSpaceState.IntersectRay(query);
+        if (hit.Count > 0 && hit["collider"].AsGodotObject() is IReceiver receiver)
+        {
+            return (receiver, (Vector3)hit["position"]);
+        }
+        return (null, Vector3.Zero);
+    }
+
+    /// <summary>
+    /// Puts the item in hand at the spot: the pick-up played backwards. The body bends down, the hand brings
+    /// the item to the spot along a way planned and swept as for picking it up, opens, and the arm comes back.
+    /// </summary>
+    private void Put(IReceiver receiver, Transform3D spot)
+    {
+        Pickable item = _held!;
+        Vector3 ahead = Ahead(_holdPoint.GlobalBasis);
+        bool low = spot.Origin.Y < GlobalPosition.Y - ApproachBelowEyes;
+        _approach = !low ? Vector3.Zero : Covered(item.Shape, spot) ? -ahead * Approach : Vector3.Up * Approach;
+        _palmOnTop = PalmOnTop(spot.Basis, item.HalfSize);
+        Depth = StoopFor(spot, item.HalfSize);
+        _from = spot;
+        _pullOut = PullOut(item.Shape, ahead);
+        _lastCarried = item.GlobalTransform;
+        _clock = TakeTime;
+        _receiver = receiver;
     }
 
     /// <summary>
@@ -243,7 +354,16 @@ public partial class Interactor : RayCast3D
             return;
         }
 
-        _clock += (float)delta;
+        if (_receiver == null)
+        {
+            _clock += (float)delta;
+        }
+        else if ((_clock -= (float)delta) <= 0)
+        {
+            LetGoAtSpot();
+            return;
+        }
+
         float down = Mathf.SmoothStep(0, 1, _clock / ReachTime);
         float grab = Mathf.SmoothStep(0, 1, (_clock - ReachTime) / CloseTime);
         float up = Mathf.SmoothStep(0, 1, (_clock - ReachTime - CloseTime) / LiftTime);
@@ -322,6 +442,20 @@ public partial class Interactor : RayCast3D
         _lastWristTarget = Grip.GlobalPosition;
     }
 
+    /// <summary>The put is over: the item stays at its spot and the place it was put in takes it.</summary>
+    private void LetGoAtSpot()
+    {
+        Pickable item = _held!;
+        IReceiver receiver = _receiver!;
+        _held = null;
+        _receiver = null;
+        ArmReach = 0;
+        HandClosed = 0;
+        Bend = 0;
+        item.SetDown(_from);
+        receiver.Receive(item, this);
+    }
+
     /// <summary>
     /// Where the item is held in view now: at the hold point, or short of it where a wall is in the way.
     /// </summary>
@@ -345,6 +479,7 @@ public partial class Interactor : RayCast3D
         if (_held != null && !IsInstanceValid(_held))
         {
             _held = null;
+            _receiver = null;
         }
     }
 
@@ -358,17 +493,17 @@ public partial class Interactor : RayCast3D
             Margin = WallGap,
         };
 
-        _palmOnTop = PalmOnTop(item);
+        _palmOnTop = PalmOnTop(item.GlobalBasis, item.HalfSize);
         _palmAtEnd = new Vector3(item.HalfSize.X + PalmToEnd, 0, 0);
         // Only something lying well below the eyes is reached from above: on a shelf at head height,
         // coming down from above would go through the shelf over it. Under a cover, it is reached from the front.
         Vector3 ahead = Ahead(_holdPoint.GlobalBasis);
         bool low = item.GlobalPosition.Y < GlobalPosition.Y - ApproachBelowEyes;
-        _approach = !low ? Vector3.Zero : Covered(item) ? -ahead * Approach : Vector3.Up * Approach;
-        Depth = StoopFor(item);
+        _approach = !low ? Vector3.Zero : Covered(item.Shape, item.GlobalTransform) ? -ahead * Approach : Vector3.Up * Approach;
+        Depth = StoopFor(item.GlobalTransform, item.HalfSize);
         _from = item.GlobalTransform;
         _lastCarried = _from;
-        _pullOut = PullOut(item, ahead);
+        _pullOut = PullOut(item.Shape, ahead);
         _hungInView = Body != null ? GlobalTransform.AffineInverse() * Body.Wrist : Vector3.Zero;
         _clock = 0;
 
@@ -377,12 +512,12 @@ public partial class Interactor : RayCast3D
     }
 
     /// <summary>
-    /// How deep to stoop for the hand to reach the item where it lies, or to come within
+    /// How deep to stoop for the hand to reach an item lying at <paramref name="at"/>, or to come within
     /// <see cref="MeetSlack"/> of it; -1 if out of reach.
     /// </summary>
-    private float StoopFor(Pickable item)
+    private float StoopFor(Transform3D at, Vector3 halfSize)
     {
-        Vector3 palm = item.GlobalPosition + PalmOnTop(item);
+        Vector3 palm = at.Origin + PalmOnTop(at.Basis, halfSize);
         return Body?.StoopFor(palm - Ahead(_holdPoint.GlobalBasis) * PalmLength, MeetSlack) ?? -1;
     }
 
@@ -432,15 +567,15 @@ public partial class Interactor : RayCast3D
         return space.IntersectShape(guard, 1).Count > 0;
     }
 
-    /// <summary>True if something solid lies within <see cref="CoverHeight"/> above the item (a shelf board).</summary>
-    private bool Covered(Pickable item)
+    /// <summary>True if something solid lies within <see cref="CoverHeight"/> above an item at <paramref name="at"/> (a shelf board).</summary>
+    private bool Covered(Shape3D shape, Transform3D at)
     {
         var rise = new PhysicsShapeQueryParameters3D
         {
-            Shape = item.Shape,
+            Shape = shape,
             CollisionMask = WorldMask,
             // Starting a little above where it lies: resting on a board, it already touches that board.
-            Transform = new Transform3D(item.GlobalBasis, item.GlobalPosition + Vector3.Up * RestGap),
+            Transform = new Transform3D(at.Basis, at.Origin + Vector3.Up * RestGap),
             Motion = Vector3.Up * CoverHeight,
         };
         return GetWorld3D().DirectSpaceState.CastMotion(rise)[0] < 1;
@@ -451,13 +586,13 @@ public partial class Interactor : RayCast3D
     /// to the hold point to be clear (as the hold point is now). Zero when the plain arc is clear,
     /// or when no way tried is.
     /// </summary>
-    private Vector3 PullOut(Pickable item, Vector3 ahead)
+    private Vector3 PullOut(Shape3D shape, Vector3 ahead)
     {
         Transform3D hold = HoldPlace();
         for (float d = 0; d <= MaxPullOut + 0.001f; d += PullOutStep)
         {
             _pullOut = -ahead * d;
-            if (PathClear(item.Shape, hold))
+            if (PathClear(shape, hold))
             {
                 return _pullOut;
             }
@@ -502,11 +637,10 @@ public partial class Interactor : RayCast3D
     /// <summary>Level, where the eyes look: the fingers point this way when reaching.</summary>
     private static Vector3 Ahead(Basis view) => new Vector3(-view.Z.X, 0, -view.Z.Z).Normalized();
 
-    /// <summary>From the item's centre to the middle of the palm laid on top of it, as it lies now.</summary>
-    private static Vector3 PalmOnTop(Pickable item)
+    /// <summary>From an item's centre to the middle of the palm laid on top of it, turned as <paramref name="basis"/>.</summary>
+    private static Vector3 PalmOnTop(Basis basis, Vector3 half)
     {
-        Basis turn = item.GlobalBasis.Orthonormalized();
-        Vector3 half = item.HalfSize;
+        Basis turn = basis.Orthonormalized();
         float halfHeight = Mathf.Abs(turn.X.Y) * half.X + Mathf.Abs(turn.Y.Y) * half.Y + Mathf.Abs(turn.Z.Y) * half.Z;
         return Vector3.Up * (halfHeight + PalmAbove);
     }

@@ -3,17 +3,20 @@
 Fonte de verdade do projeto **Fita Sem Etiqueta**. Qualquer sessão nova começa lendo este arquivo.
 Atualizar SEMPRE antes de cada commit.
 
-Última atualização: 2026-11-19 (a parte visual passa a ser gerada pelo Gemini; a entrega 6 ainda não começou).
+Última atualização: 2026-11-19 (entrega 6, "As fitas", aprovada; primeira entrega com a arte pelo Gemini).
 
 ## 1. Estado atual
 
 - **Etapa 1 (Pesquisa sobre Fears to Fathom):** concluída e aprovada em 2026-11-11.
 - **Etapa 2 (Planejamento):** concluída e aprovada em 2026-11-11.
-- **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12. Entrega 4 ("Corpo do Nondas") concluída em duas sessões: parte 1 (pernas) aprovada em 2026-11-13, parte 2 (mão) aprovada em 2026-11-14. **Entrega 5 ("A locadora") aprovada em 2026-11-14.**
-- **Próxima entrega: 6, "As fitas"** (ver seção 9).
-- **Arte:** desde 2026-11-19, a parte visual é gerada pelo Gemini e revisada pelo Claude (seção 4, "Arte com o Gemini"). A entrega 6 é a primeira nesse fluxo.
+- **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12. Entrega 4 ("Corpo do Nondas") concluída em duas sessões: parte 1 (pernas) aprovada em 2026-11-13, parte 2 (mão) aprovada em 2026-11-14. Entrega 5 ("A locadora") aprovada em 2026-11-14. **Entrega 6 ("As fitas") aprovada em 2026-11-19.**
+- **Próxima entrega: 7, "Diálogo e idiomas"** (ver seção 9).
+- **Arte:** desde 2026-11-19, a parte visual é gerada pelo Gemini e revisada pelo Claude (seção 4, "Arte com o Gemini"). A entrega 6 foi a primeira nesse fluxo (fachada e rebobinadeira).
 - **Código de jogo:** projeto Godot em `game/`:
-  - `levels/store/store.tscn`: **a Astro Vídeo Locadora, cena principal (F5)**. Instancia o cenário (`assets/models/store/store.gltf`, filhos editáveis), 7 luzes com sombra, uma sonda de reflexo, as placas de gênero (`Label3D` com chave de tradução), o jogador, o filtro VHS, o menu de pausa e 5 fitas de teste (balcão, dois vãos da estante atrás do balcão, bandeja de devolução). `floor.tres` repete o material do piso ligando a cor de vértice (desgaste), que o importador de glTF deixa desligada.
+  - `levels/store/store.tscn`: **a Astro Vídeo Locadora, cena principal (F5)**. Instancia o cenário (`assets/models/store/store.gltf`, filhos editáveis), 7 luzes com sombra, uma sonda de reflexo, as placas de gênero (`Label3D` com chave de tradução), o jogador, o filtro VHS, o menu de pausa, 4 fitas devolvidas na bandeja (`ReturnedTapes`), os 4 vãos da estante por gênero (`ShelfGaps`), o videocassete com a TV (`TapeDeck`) e a rebobinadeira (`Rewinder`). `floor.tres` repete o material do piso ligando a cor de vértice (desgaste), que o importador de glTF deixa desligada.
+  - `tapes/`: as fitas (entrega 6). `TapeInfo` (filme, gênero, créditos, adulterada, rebobinada; filho da fita), `ShelfGap` (vão da estante de um gênero), `TapeDeck` (videocassete, TV, programa da fita, modo assistir), `Rewinder` (tampa, luz, 4 s), `tape_screen.gdshader` (defeitos de fita na TV), `tape_shot.tscn` (a cena noturna gravada: fachada e loja, câmera na mão). Decisões em `docs/design/02-stack-architecture.md`, decisão da entrega 6.
+  - `assets/models/facade/`: fachada da loja, vizinhos, calçada, metade da rua, poste, fios e bandeirinhas (glTF separado, 11 texturas, cerca de 5,6 mil triângulos, 50 colisores). Gerada por `tools/blender/facade.py` (Gemini). Por enquanto só aparece na fita; é a base da rua da entrega 8.
+  - `assets/models/rewinder.glb`: rebobinadeira com tampa (`Lid`), luz (`Led`) e o ponto da fita (`TapeSpot`). Gerada por `tools/blender/rewinder.py` (Gemini).
   - `levels/test_room/test_room.tscn`: sala cinza de teste. Instancia o jogador, o filtro VHS e o menu de pausa. Tem uma lata vermelha, uma poça e uma caixa amarela do tamanho de uma fita VHS em cima do caixote, na borda (o braço alcança até uns 70 cm à frente).
   - `props/tape.tscn`: fita VHS pegável (estojo preto, `assets/models/tape.glb`, adesivo dourado; as variantes verde e vermelha estão no modelo, escondidas).
   - `assets/models/store/`: cenário da loja em glTF separado (`store.gltf`, `store.bin`, 12 texturas PNG). Gerado por `tools/blender/store.py`. 285 corpos de colisão convexos (camada `world`), cerca de 21 mil triângulos, 12 materiais.
@@ -21,7 +24,7 @@ Atualizar SEMPRE antes de cada commit.
   - `player/PlayerBody.cs`: corpo do Nondas visto de dentro. Pernas e braços animados pela direção e pela velocidade; cabeça desenhada só como sombra; uma área do tamanho do sapato em cada pé, que chuta objetos soltos e faz a poça ondular. Fica 12 a 32 cm atrás da câmera conforme o olhar e é empurrado para baixo dela pelas paredes. Agacha para pegar coisas e estica o braço direito até elas; agachado, a câmera fica nos olhos da pose, e o corpo recua onde a cabeça não cabe.
   - `player/HandAim.cs` e `player/FingerCurl.cs`: modificadores de esqueleto que giram a mão e fecham os dedos, depois da cinemática inversa do braço.
   - `assets/models/nondas.glb`: modelo do Nondas (malha do MPFB, CC0), gerado por script do Blender que fica num repositório privado (ver seção 4, Licença).
-  - `interaction/`: `Interactor` (raio da câmera com mira tolerante, tecla E; conduz a pegada: agachar, alcançar, fechar a mão, levantar, segurar pela ponta), interface `IInteractable`, `Pickable` (objeto que se pega e solta) e interface `IReacher` (o corpo que alcança, injetado pelo `PlayerController`).
+  - `interaction/`: `Interactor` (raio da câmera com mira tolerante, tecla E; conduz a pegada: agachar, alcançar, fechar a mão, levantar, segurar pela ponta; e o "pôr", a pegada ao contrário), interface `IInteractable`, `Pickable` (objeto que se pega, solta ou põe num lugar), interfaces `IReacher` (o corpo que alcança) e `IViewer` (quem para para assistir), ambas injetadas pelo `PlayerController`, `IReceiver` (lugar onde se põe o item na mão) e `IDescribed` (o que o item é, na dica).
   - `core/Settings.cs`: autoload com intensidade do filtro, sensibilidade do mouse e volume. Grava em `user://settings.cfg`.
   - `vfx/`: filtro VHS (`vhs_filter.tscn`, `VhsFilter.cs`, `vhs_filter.gdshader`). O 3D é renderizado a 480 linhas. Poça que ondula (`puddle.tscn`, `Puddle.cs`, `puddle.gdshader`).
   - `ui/`: menu de pausa (`pause_menu.tscn`, `PauseMenu.cs`). Esc abre e fecha, pausa o jogo e solta o mouse.
@@ -164,6 +167,7 @@ O dono assina o Google AI Pro. Desde 2026-11-19, a parte visual é gerada pelo G
 - **O Claude nunca aciona o Gemini.** A FAQ do Antigravity (conferida em 2026-11-19) diz que o `agy -p` "is intended for direct scripting and CI workflows", que envolvê-lo em agentes ou aplicativos de terceiros não é suportado nos planos pessoais e que usar o Claude Code com o login do Antigravity viola os termos e pode suspender a conta. Controlar o app do Gemini pela tela também não é usado.
 - **Modelos:** scripts no Neon, raciocínio Médio (Alto se a resposta falhar); imagens no Hydrogen, raciocínio Baixo; vídeo só quando valer o custo.
 - **Custo medido em 2026-11-18** (janela de 5 h do Google AI Pro): vídeo de 10 s, 20%; imagem, 1%; script do Blender, menos de 1%. A página "Limites de uso" do app fica em cache: recarregar o app (Ctrl+R) antes de ler.
+- **Primeira rodada (entrega 6):** dois scripts num prompt cada, sem correção de aparência. A rebobinadeira rodou de primeira. A fachada tinha 2 erros mecânicos (multiplicação no lugar de matrizes do numpy com formatos diferentes, `*=`), corrigidos pelo Claude; o resto saiu certo e determinístico. Os prompts ficam em `docs/prompts/` (o `artist` escreve, o dono cola o bloco `text`).
 - **Todo prompt de script diz, e o `artist` confere na volta:** eixos e origem; medidas; nomes dos objetos que o código usa; colisão `-convcolonly` por peça (cada tábua, lateral, fundo e tampo), uma caixa por trecho contínuo de fitas ou caixas e 2 cm livres acima de item em prateleira (seção 8); só Principled BSDF, com texturas geradas por código e semente fixa (o mesmo script gera o mesmo arquivo); nada de marca, logo ou texto legível; leve para 480 linhas; formato e caminho de exportação.
 
 ### MVP
@@ -259,6 +263,11 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Conferir o pescoço:** render no Blender da câmera do jogo olhando para baixo, com o corpo a 11, 18, 24 e 32 cm, e a malha `Head` escondida. Foi assim que a tampa do pescoço foi validada sem abrir o jogo.
 - **Loja:** `tools/blender/store.py` (cerca de 5 s; `-- --preview <pasta>` renderiza 5 vistas da câmera do jogo em EEVEE). Importa as medidas da fita de `tape.py`. Dois rodadas seguidas geram arquivos idênticos.
 - **Ao regerar a loja, os `.import` das texturas não mudam** (mipmaps e compressão de vídeo foram ligados à mão). Textura NOVA nasce com o padrão do Godot (sem mipmaps): repetir o ajuste (`compress/mode=2`, `mipmaps/generate=true`, `detect_3d/compress_to=0`).
+- **Fachada:** `tools/blender/facade.py` (Gemini, cerca de 6 s; `-- --preview <pasta>` renderiza 4 vistas: do outro lado da rua a 75°, a mesma a 36° em 4:3, a porta e o portão). Mesma origem do `store.py`. Texturas com mipmaps e compressão ligadas à mão nos `.import` (como as da loja).
+- **Rebobinadeira:** `tools/blender/rewinder.py` (Gemini; `-- --preview <pasta>` com a tampa fechada e aberta).
+- **Conferir uma gravação sem abrir 400 imagens:** um script do Blender que monta uma folha de contato (9 quadros reduzidos num JPEG) ou recorta a mesma região de vários quadros lado a lado (a tela da TV). Fica na pasta de rascunho da sessão; refazer quando precisar.
+- **SubViewport:** a textura da imagem chega em sRGB. Num shader, ruído e mistura de cor feitos depois da conversão para linear (`source_color`) pesam muito nos escuros; ler sem `source_color`, trabalhar em sRGB e converter com `pow(c, 2.2)` no fim.
+- Para medir o custo de um viewport numa gravação: `RenderingServer.viewport_set_measure_render_time(rid, true)` e `viewport_get_measured_render_time_gpu(rid)`.
 - O importador de glTF do Godot 4.7.2 **não liga `vertex_color_use_as_albedo`** mesmo com a cor de vértice na malha. Por isso o piso tem o material `levels/store/floor.tres` por cima. Mudou o material do piso no Blender: atualizar o `.tres`.
 
 ### A instalar nas próximas entregas
@@ -294,8 +303,9 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **O jogador atravessa objetos soltos** (decisão da entrega 3). Um objeto que precise barrar o caminho deve ficar na camada `world`.
 - **Chute determinístico:** a lata tomba sempre para a frente e segue deitada. Se parecer repetitivo na rua (entrega 8), variar o giro.
 - **A fita virou cena própria** (`props/tape.tscn`) na entrega 5; a sala de teste ainda usa a dela, escrita dentro de `test_room.tscn`. A lata continua escrita lá e vira cena na entrega 8.
-- **5 fitas de teste na locadora** (`TestTapes` em `store.tscn`): servem para conferir o alcance. A entrega 6 as troca pelas fitas de verdade (caixa de devolução, rotina).
-- **Guardar a fita na estante** (mirar num vão, "[E] Guardar", a mão encaixa a fita em pé, lombada para fora): pedido do dono, deixado para a entrega 6 por decisão dele, junto com "guardar por gênero". Hoje só existe "Soltar": perto da estante, a fita cai no chão.
+- **Fitas da bandeja (entrega 6):** 4 fitas devolvidas (`ReturnedTapes` em `store.tscn`), paradas no fim. As 5 fitas de teste saíram. A entrega 9 decide quais fitas cada noite traz.
+- **O videocassete chama o jogador** (`TapeDeck` → `Interactor.Viewer.Watch`, com um `Action` no lugar de sinal; achado do `reviewer`): aceitável enquanto não há quem coordene a fase. Rever com o `LevelLoader` e o `GameState` (entrega 9), quando "fita testada", "rebobinada" e "guardada" saírem do nó da fita para o estado da história.
+- **Guardar na estante (feito na entrega 6):** 4 vãos vazios, um por gênero das fitas da bandeja, nas tábuas de 0,91 e 1,23 m (`RACK_EMPTY` no `store.py`; o relatório do script dá os extremos de cada vão). Uma fita nova de outro gênero precisa de vão novo. A rebobinadeira só aceita fita testada até o fim (achado do `reviewer`: rebobinada antes, a gravação da fita adulterada sumiria). Guardar sem testar ou sem rebobinar ainda é possível: missões da entrega 9.
 - **Item na mão e troca de fase:** o `Pickable` guarda o pai original para voltar a ele ao ser solto. Se a fase for trocada com o item na mão, esse pai não existe mais: soltar lança erro e o `Interactor` fica preso em "Soltar" (achado do `reviewer`). No caso inverso, se o jogador for recarregado com o item na mão, o item é apagado junto, porque é filho do ponto da mão. Tratar os dois junto com o `LevelLoader`. Desde a parte 2, um item apagado enquanto está na mão é esquecido (`ForgetFreedItem`); o caso do pai original que não existe mais continua aberto.
 - **Regra de montagem de fase (alcance da mão, medido na entrega 4, parte 2, e conferido na loja na entrega 5):** item em cima de móvel a até uns 65 cm do eixo do jogador encostado (uns 30 cm da borda de um balcão de 1 m); no chão, até uns 50 cm à frente; em prateleira, até 1,7 m de altura. Fora disso o "[E] Pegar" não aparece. Na loja: a tábua de cima da estante de fitas (1,55 m, fita em pé) só se alcança encostado na estante; a bandeja de devolução, a uns 30 cm dela.
 - **Regra de montagem: pelo menos 2 cm livres acima de item em prateleira** (achado do `reviewer` na entrega 5). As varreduras do Jolt ignoram o que já está sobreposto no ponto de partida; com uma tábua a menos de 2 cm, a mão não percebe a tábua e desce através dela. A fita em pé na tábua de cima da estante tem 4 cm.
@@ -308,14 +318,14 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - **Pulso ainda gira uns 40°** em relação ao antebraço ao segurar (o esqueleto não tem ossos de torção; o antebraço já assume 60%). O dono aprovou a aparência.
 - **Chute abaixo de 60 quadros por segundo:** o corpo é posicionado só no quadro de imagem (no tick de física a mão tremia ao andar). Os pés chutam da posição desenhada; abaixo de 60 quadros por segundo, um chute pode sair um quadro atrasado. A lata foi chutada a 144, 60 e 30.
 - **Fita atravessou o chão uma vez** no teste do dono, sem que ele lembrasse o que fez antes. Não se reproduziu em 8 tentativas (soltar do caixote e do chão, 5 ângulos). Se acontecer de novo, pedir ao dono o que fez nos 5 segundos anteriores.
-- **Item de missão pode ser chutado para longe** (achado do `reviewer`): a fita é chutável e não há reposição se ela parar num vão estreito demais para o jogador ou cair fora do cenário. Na sala de teste todo ponto é alcançável. Decidir na entrega 6, quando a fita virar item de missão.
+- **Item de missão chutado (decidido na entrega 6):** a fita continua chutável. O `reviewer` não achou na loja ponto onde uma fita chutada fique fora de alcance (rodapés fechados, estante da TV emendada na de fitas, corpo do balcão fechado). Vale a regra de montagem: nenhuma fresta de 3 cm ou mais. Rever na rua (entrega 8).
 - **Poça no editor:** sem o jogo rodando, o shader mostra anéis parados no centro da poça (o script que os zera não roda no editor). No jogo não aparece.
 - **Texto da dica com a tecla fixa** ("[E] Pegar"). Se um dia houver troca de teclas, a tecla sai do texto.
 - **Dica acima do filtro VHS:** decisão minha, igual à do menu de pausa. O dono viu e não opinou.
 - **Objeto pequeno afunda alguns milímetros no piso** em repouso (tolerância de penetração padrão do Jolt, 2 cm). Não se vê a 480 linhas. Baixar `physics/jolt_physics_3d/simulation/penetration_slop` resolve, mas não foi adotado por ser um ajuste global sem necessidade visível.
 - **Teleporte do jogador (troca de fase, checkpoint):** com a interpolação ligada, chamar `ResetPhysicsInterpolation()` depois de mover o jogador, senão ele desliza de um ponto ao outro.
 - **Filtro VHS conferido na locadora (entrega 5):** o dono elogiou a loja com o filtro. Sem mudança.
-- **Defeitos fortes de fita** (faixa de tracking, riscos brancos, tremor): fora do filtro geral por escolha do dono. Candidatos para as fitas assistidas na TV (entrega 6). A receita está em `docs/design/02-stack-architecture.md` só como descrição; o código das opções recusadas não foi guardado.
+- **Defeitos de fita (feito na entrega 6):** opção "C" escolhida pelo dono, só na TV de teste (o filtro geral não muda). Receita em `docs/design/02-stack-architecture.md`, decisão da entrega 6.
 - **Menu de pausa acima do filtro:** decisão minha, para o menu continuar legível com o filtro no máximo. O dono não opinou. Inverter é trocar o número da camada.
 - **Filtro e menu instanciados em `test_room.tscn`:** quando o `LevelLoader` existir, eles precisam ficar num lugar que sobreviva à troca de fase.
 - **Volume:** o controle já atua no barramento principal, mas não há som para ouvir. Conferir na primeira entrega com áudio.
@@ -332,9 +342,9 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
   - Porta de aço fechada (decisão do dono: a rua só existe na entrega 8). Abrir e baixar é missão da entrega 9.
   - Porta do depósito aberta para dentro, com um engradado de calço e a maçaneta de dentro quebrada; porta dos fundos fechada, no corredor (não no depósito: na armadilha o Freguês, que tem a chave, sairia por ela). Ainda sem portas que se movem. O sentido de abertura da porta do depósito se decide na entrega 15 (armadilha).
   - Vão livre sob o balcão (lado do atendente, 1,22 m × 0,9 m × 0,56 m) para o esconderijo da entrega 12, mas a colisão do corpo do balcão ainda é fechada.
-  - Sem colisão (decoração): caderno, fichário, rebobinadeira, caneta, cartazes, cortina, calhas, vassoura, mãos-francesas da bandeja.
+  - Sem colisão (decoração): caderno, fichário, caneta, cartazes, cortina, calhas, vassoura, mãos-francesas da bandeja. A rebobinadeira (entrega 6) só tem colisão no fundo da cavidade: uma fita solta em cima dela cai na cavidade, de onde se pega de novo.
   - Etiquetas pequenas da estante de fitas ficam ilegíveis a 480 linhas; as placas grandes ficam legíveis.
-  - TV de teste: a tela é um objeto à parte (`TvScreen`, UV de 0 a 1 vista de frente), pronta para o vídeo da entrega 6.
+  - TV de teste: a tela é um objeto à parte (`TvScreen`, UV de 0 a 1 vista de frente); enquanto a fita toca, o `TapeDeck` troca o material dela pelo da imagem.
 - **Fatos de época da loja (pesquisa da entrega 5, confiança média):** caixa vazia com a capa na prateleira; a fita ficava guardada atrás do balcão; estantes por gênero; ECA (1990) exigia respeitar a classificação etária. Sem fonte: cortina da seção adulta, fenda de devolução, piso, paredes (tratados como escolha de design).
 - **Exportação para Windows com `net10.0`:** não validada. Validar na entrega 19 (ou antes, se alguma entrega precisar exportar).
 - **Tamanhos de download** das ferramentas: confirmar na fonte no momento de pedir cada autorização.
@@ -346,16 +356,15 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 
 ## 9. Próxima entrega
 
-**Entrega 6: As fitas** (`docs/design/03-mvp.md`, marco 1). Coração do jogo.
+**Entrega 7: Diálogo e idiomas** (`docs/design/03-mvp.md`, marco 1).
 
-- O dono esvazia a bandeja de devoluções, rebobina, assiste na TV de teste e guarda as fitas por gênero na estante atrás do balcão. A primeira fita adulterada aparece: depois dos créditos, cerca de 10 s da fachada da locadora filmada do outro lado da rua, à noite (`docs/design/01-story.md`, noite 1, item 3).
-- **Guardar na estante** (pedido do dono na entrega 5): mirar num vão, "[E] Guardar", a mão encaixa a fita em pé, lombada para fora, com animação. Usar o caminho planejado e varrido da pegada, ao contrário. As 5 fitas de teste de `store.tscn` saem.
-- Rebobinadeira e videocassete na loja: posições na seção 8 ("Locadora, peças estáticas"); a tela da TV é o objeto `TvScreen`.
-- **Primeira entrega no fluxo com o Gemini** (seção 4): a parte visual nova desta entrega, como a fachada da loja para a primeira fita (se for modelada), é pedida ao Gemini por prompt.
-- **Decisões a levar ao dono antes de programar:** como produzir as imagens das fitas (vídeo pré-renderizado no Blender ou cena ao vivo num `SubViewport`); a fachada da loja ainda não existe (a rua é da entrega 8). Quais defeitos de fita entram só nas fitas assistidas (faixa de tracking, riscos, tremor: seção 8).
-- Fatos de época pelo `researcher` se a fita depender deles (filmadora doméstica e carimbo de data e hora, cópia para VHS; preço de locação).
-- Fora desta entrega: personagens e diálogo (7), rua e bar (8), escolha "gaveta ou prateleira" e estado da história (9), som, sistema de ruído.
-- Pronto quando: o dono, com F5, esvazia a bandeja, rebobina, assiste a uma fita normal e à adulterada, e guarda as fitas por gênero.
+- O dono atende Dona Neide (`docs/design/01-story.md`, noite 1, item 2): ela chega ao balcão e pede uma fita; Nondas acha a fita e anota a locação no caderno. Legenda na parte de baixo da tela, "ruído de fala" e gesto (personagens sem voz). Falas curtas, por chave de tradução, pelo agente `language`.
+- Troca de idioma (português, inglês, espanhol) e tamanho da legenda no menu de pausa (lição 3 da pesquisa).
+- **Primeiro personagem além do Nondas:** aparência pelo Gemini (corpo do MPFB, rosto, roupa, materiais), por prompt; esqueleto, pesos, animações (parada, falando com gesto, andando) e exportação pelo Claude. Seção 4, "Arte com o Gemini".
+- **Ruído de fala:** gravado pelo dono e tratado no Audacity (a instalar, com autorização; seção 6). Efeitos de terceiros só CC0.
+- **Decisões a levar ao dono antes de programar:** por onde Dona Neide entra, se a porta de aço está fechada e a rua só existe na entrega 8; como achar a fita pedida (a estante atrás do balcão já tem os vãos por gênero) e como é o caderno; e a data na imagem da fita adulterada (pendente da entrega 6: a fachada mostraria a data do dia anterior nos primeiros segundos, para o jogador aprender a ler o carimbo que revela tudo na noite 3).
+- Fora desta entrega: rua e bar (8), Freguês, Cabo Moreira, missões e estado da história (9), sistema de ruído.
+- Pronto quando: o dono, com F5, atende Dona Neide do começo ao fim, lê a legenda nos três idiomas e troca o idioma no menu.
 
 ## 10. Release final (tarefas obrigatórias)
 

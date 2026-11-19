@@ -1,4 +1,4 @@
-[gd_scene load_steps=9 format=3]
+[gd_scene load_steps=25 format=3]
 
 [ext_resource type="PackedScene" path="res://assets/models/store/store.gltf" id="1_store"]
 [ext_resource type="Material" path="res://levels/store/floor.tres" id="2_floor"]
@@ -6,12 +6,34 @@
 [ext_resource type="PackedScene" path="res://vfx/vhs_filter.tscn" id="4_vhs_filter"]
 [ext_resource type="PackedScene" path="res://ui/pause_menu.tscn" id="5_pause_menu"]
 [ext_resource type="PackedScene" path="res://props/tape.tscn" id="6_tape"]
+[ext_resource type="Script" path="res://tapes/TapeInfo.cs" id="7_tape_info"]
+[ext_resource type="Script" path="res://tapes/ShelfGap.cs" id="8_shelf_gap"]
+[ext_resource type="Script" path="res://tapes/TapeDeck.cs" id="9_tape_deck"]
+[ext_resource type="Script" path="res://tapes/Rewinder.cs" id="10_rewinder"]
+[ext_resource type="Shader" path="res://tapes/tape_screen.gdshader" id="11_screen"]
+[ext_resource type="PackedScene" path="res://tapes/tape_shot.tscn" id="12_shot"]
+[ext_resource type="PackedScene" path="res://assets/models/rewinder.glb" id="13_rewinder"]
 
 [sub_resource type="Environment" id="Environment_store"]
 background_mode = 1
 ambient_light_source = 2
 ambient_light_color = Color(1, 0.98, 0.92, 1)
 ambient_light_energy = 0.3
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gap_a"]
+size = Vector3(0.14, 0.19, 0.212)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_gap_b"]
+size = Vector3(0.14, 0.19, 0.2385)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_vcr"]
+size = Vector3(0.32, 0.09, 0.43)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_rewinder"]
+size = Vector3(0.17, 0.09, 0.26)
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_screen"]
+shader = ExtResource("11_screen")
 
 [sub_resource type="FontVariation" id="FontVariation_sign"]
 variation_embolden = 0.6
@@ -296,22 +318,152 @@ text = "SIGN_GENRE_ADULT"
 font_size = 9
 outline_size = 0
 
-[node name="TestTapes" type="Node3D" parent="."]
+[node name="ReturnedTapes" type="Node3D" parent="."]
 
-[node name="OnCounter" parent="TestTapes" instance=ExtResource("6_tape")]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 4.3, 1.025, -2)
+[node name="Adventure" parent="ReturnedTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0.9945, -0.1045, 0, 0, 0, 1, -0.1045, -0.9945, 0, 3.91, 0.564, -0.11)
 
-[node name="RackLow" parent="TestTapes" instance=ExtResource("6_tape")]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.7575, 0.347, -1.65)
+[node name="TapeInfo" type="Node" parent="ReturnedTapes/Adventure"]
+script = ExtResource("7_tape_info")
+TitleKey = "TAPE_TITLE_ADVENTURE"
+GenreKey = "SIGN_GENRE_ADVENTURE"
+Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_ADVENTURE_1", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_ADVENTURE_2", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_ADVENTURE_3")
 
-[node name="RackHigh" parent="TestTapes" instance=ExtResource("6_tape")]
-transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.7575, 1.647, -2.55)
+[node name="Thriller" parent="ReturnedTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0.9945, 0.1045, 0, 0, 0, 1, 0.1045, -0.9945, 0, 4.11, 0.564, -0.24)
 
-[node name="ReturnBoxA" parent="TestTapes" instance=ExtResource("6_tape")]
-transform = Transform3D(1, 0, 0, 0, 0, 1, 0, -1, 0, 4.0, 0.567, -0.17)
+[node name="TapeInfo" type="Node" parent="ReturnedTapes/Thriller"]
+script = ExtResource("7_tape_info")
+TitleKey = "TAPE_TITLE_THRILLER"
+GenreKey = "SIGN_GENRE_THRILLER"
+Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_THRILLER_1", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_THRILLER_2", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_THRILLER_3")
 
-[node name="ReturnBoxB" parent="TestTapes" instance=ExtResource("6_tape")]
-transform = Transform3D(0.866, -0.5, 0, 0, 0, 1, -0.5, -0.866, 0, 4.0, 0.595, -0.17)
+[node name="Horror" parent="ReturnedTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0.9986, 0.0523, 0, 0, 0, 1, 0.0523, -0.9986, 0, 3.905, 0.564, -0.27)
+
+[node name="TapeInfo" type="Node" parent="ReturnedTapes/Horror"]
+script = ExtResource("7_tape_info")
+TitleKey = "TAPE_TITLE_HORROR"
+GenreKey = "SIGN_GENRE_HORROR"
+Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_HORROR_1", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_HORROR_2", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_HORROR_3")
+
+[node name="Comedy" parent="ReturnedTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0.8829, -0.4695, 0, 0, 0, 1, -0.4695, -0.8829, 0, 4.01, 0.5925, -0.17)
+
+[node name="TapeInfo" type="Node" parent="ReturnedTapes/Comedy"]
+script = ExtResource("7_tape_info")
+TitleKey = "TAPE_TITLE_COMEDY"
+GenreKey = "SIGN_GENRE_COMEDY"
+Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_COMEDY_1", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_COMEDY_2", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_COMEDY_3")
+Tampered = true
+
+[node name="ShelfGaps" type="Node3D" parent="."]
+
+[node name="Adventure" type="Area3D" parent="ShelfGaps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7, 1.23, -2.447)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("8_shelf_gap")
+GenreKey = "SIGN_GENRE_ADVENTURE"
+Length = 0.212
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ShelfGaps/Adventure"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.095, -0.106)
+shape = SubResource("BoxShape3D_gap_a")
+
+[node name="Horror" type="Area3D" parent="ShelfGaps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7, 0.91, -2.447)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("8_shelf_gap")
+GenreKey = "SIGN_GENRE_HORROR"
+Length = 0.212
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ShelfGaps/Horror"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.095, -0.106)
+shape = SubResource("BoxShape3D_gap_a")
+
+[node name="Thriller" type="Area3D" parent="ShelfGaps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7, 1.23, -1.5295)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("8_shelf_gap")
+GenreKey = "SIGN_GENRE_THRILLER"
+Length = 0.2385
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ShelfGaps/Thriller"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.095, -0.11925)
+shape = SubResource("BoxShape3D_gap_b")
+
+[node name="Comedy" type="Area3D" parent="ShelfGaps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7, 0.91, -1.5295)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("8_shelf_gap")
+GenreKey = "SIGN_GENRE_COMEDY"
+Length = 0.2385
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ShelfGaps/Comedy"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.095, -0.11925)
+shape = SubResource("BoxShape3D_gap_b")
+
+[node name="TapeDeck" type="Area3D" parent="." node_paths=PackedStringArray("Screen", "WatchEyes", "Feed", "ShotCamera", "Card")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.6, 0.56, -3.43)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("9_tape_deck")
+Screen = NodePath("../Model/TvScreen")
+WatchEyes = NodePath("WatchEyes")
+Feed = NodePath("Feed")
+ShotCamera = NodePath("Feed/Shot/Camera")
+Card = NodePath("Feed/Card")
+ScreenMaterial = SubResource("ShaderMaterial_screen")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="TapeDeck"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.14, -0.015, -0.02)
+shape = SubResource("BoxShape3D_vcr")
+
+[node name="WatchEyes" type="Marker3D" parent="TapeDeck"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.4, 0.94, -0.02)
+
+[node name="Feed" type="SubViewport" parent="TapeDeck"]
+own_world_3d = true
+disable_3d = true
+size = Vector2i(320, 240)
+render_target_update_mode = 0
+
+[node name="Card" type="Control" parent="TapeDeck/Feed"]
+layout_mode = 3
+anchors_preset = 0
+offset_right = 320.0
+offset_bottom = 240.0
+
+[node name="Black" type="ColorRect" parent="TapeDeck/Feed/Card"]
+layout_mode = 0
+offset_right = 320.0
+offset_bottom = 240.0
+color = Color(0, 0, 0, 1)
+
+[node name="Shot" parent="TapeDeck/Feed" instance=ExtResource("12_shot")]
+
+[node name="Rewinder" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.425, 1, -3.415)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("10_rewinder")
+
+[node name="Model" parent="Rewinder" instance=ExtResource("13_rewinder")]
+transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="Rewinder"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
+shape = SubResource("BoxShape3D_rewinder")
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 0, -1)

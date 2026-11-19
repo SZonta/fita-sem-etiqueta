@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using FitaSemEtiqueta.Core;
 using FitaSemEtiqueta.Interaction;
@@ -8,8 +9,9 @@ namespace FitaSemEtiqueta.Player;
 /// <summary>
 /// First-person movement: WASD to walk, mouse to look.
 /// Loose objects in the way get kicked.
+/// Can stop to watch something (the test TV): bends to it and looks at it until the player moves on.
 /// </summary>
-public partial class PlayerController : CharacterBody3D
+public partial class PlayerController : CharacterBody3D, IViewer
 {
     [Export] public float WalkSpeed { get; set; } = 2.0f;
 
@@ -48,6 +50,22 @@ public partial class PlayerController : CharacterBody3D
     private float _yaw;
     private float _pitch;
 
+    // Watching: where the feet go and how deep the body bends for the eyes to be where asked, which way
+    // the view turns, how far the mouse has moved it from there, and who to tell when it stops.
+    private const float WatchTime = 0.6f;
+    private static readonly Vector2 WatchLookRange = new(0.3f, 0.2f);
+    private bool _watching;
+    private float _watchBlend;
+    private float _watchDepth;
+    private Vector3 _watchFeet;
+    private float _watchYaw;
+    private float _watchPitch;
+    private Vector2 _watchLook;
+    private Action? _stopped;
+
+    /// <inheritdoc/>
+    public bool Watching => _watching;
+
     public override void _Ready()
     {
         _head = GetNode<Node3D>("Head");
@@ -72,6 +90,7 @@ public partial class PlayerController : CharacterBody3D
         _body.SetHandTarget(_interactor.Grip);
         _body.SetEyeHeight(_eyeHeight);
         _interactor.Body = _body;
+        _interactor.Viewer = this;
 
         Input.MouseMode = Input.MouseModeEnum.Captured;
     }
@@ -81,6 +100,12 @@ public partial class PlayerController : CharacterBody3D
         if (@event is InputEventMouseMotion motion && Input.MouseMode == Input.MouseModeEnum.Captured)
         {
             float sensitivity = MouseSensitivity * Settings.Instance.MouseSensitivity;
+            if (_watching)
+            {
+                // Watching, the mouse only looks a little around what is watched.
+                _watchLook = (_watchLook - motion.ScreenRelative * sensitivity).Clamp(-WatchLookRange, WatchLookRange);
+                return;
+            }
             _yaw -= motion.ScreenRelative.X * sensitivity;
             _pitch = Mathf.Clamp(_pitch - motion.ScreenRelative.Y * sensitivity, -MaxPitch, MaxPitch);
         }
@@ -89,8 +114,17 @@ public partial class PlayerController : CharacterBody3D
     public override void _Process(double delta)
     {
         Vector3 feet = GetGlobalTransformInterpolated().Origin;
-        float bend = _interactor.Bend;
-        float stoop = _interactor.Depth * bend;
+        _watchBlend = Mathf.MoveToward(_watchBlend, _watching ? 1 : 0, (float)delta / WatchTime);
+        float watch = Mathf.SmoothStep(0, 1, _watchBlend);
+        if (_watching)
+        {
+            float turn = 1 - Mathf.Exp(-8 * (float)delta);
+            _yaw = Mathf.LerpAngle(_yaw, _watchYaw + _watchLook.X, turn);
+            _pitch = Mathf.Lerp(_pitch, _watchPitch + _watchLook.Y, turn);
+        }
+
+        float bend = Mathf.Max(_interactor.Bend, watch);
+        float stoop = Mathf.Max(_interactor.Depth * _interactor.Bend, _watchDepth * watch);
         Vector3 eyes = feet + Vector3.Up * _eyeHeight;
 
         // Bending to pick something up, the camera goes where the stooping body's eyes are (the body
@@ -118,13 +152,25 @@ public partial class PlayerController : CharacterBody3D
             velocity += GetGravity() * (float)delta;
         }
 
-        // Standing still while picking something up.
-        Vector2 input = _interactor.Busy
+        // Standing still while picking something up. Watching, the feet go to their spot, and moving
+        // or the "interact" action stops watching.
+        Vector2 input = _interactor.Busy || _watching
             ? Vector2.Zero
             : Input.GetVector("move_left", "move_right", "move_forward", "move_back");
         Vector3 direction = Transform.Basis * new Vector3(input.X, 0, input.Y);
         velocity.X = direction.X * WalkSpeed;
         velocity.Z = direction.Z * WalkSpeed;
+        if (_watching)
+        {
+            Vector3 toSpot = (_watchFeet - GlobalPosition) with { Y = 0 };
+            Vector3 glide = (toSpot / (float)delta).LimitLength(WalkSpeed);
+            velocity.X = glide.X;
+            velocity.Z = glide.Z;
+            if (Input.IsActionJustPressed("interact") || MovePressed())
+            {
+                StopWatching();
+            }
+        }
 
         Velocity = velocity;
         MoveAndSlide();
@@ -137,6 +183,48 @@ public partial class PlayerController : CharacterBody3D
         // What the player really moved: walking into a wall, the legs stand still.
         _body.Walk(GlobalBasis.Inverse() * GetRealVelocity(), delta);
     }
+
+    /// <inheritdoc/>
+    public void Watch(Vector3 eyes, Vector3 target, Action stopped)
+    {
+        // The bend that puts the eyes at the height asked for (the stoop lowers them all the way down).
+        float height = eyes.Y - GlobalPosition.Y;
+        _watchDepth = 0;
+        for (int i = 0; i <= 20; i++)
+        {
+            float depth = i / 20f;
+            if (Mathf.Abs(_body.EyesAt(depth).Y - height) < Mathf.Abs(_body.EyesAt(_watchDepth).Y - height))
+            {
+                _watchDepth = depth;
+            }
+        }
+
+        Vector3 look = target - eyes;
+        _watchYaw = Mathf.Atan2(-look.X, -look.Z);
+        _watchPitch = Mathf.Atan2(look.Y, new Vector2(look.X, look.Z).Length());
+        _watchFeet = eyes - new Basis(Vector3.Up, _watchYaw) * _body.EyesAt(_watchDepth);
+        _watchLook = Vector2.Zero;
+        _stopped = stopped;
+        _watching = true;
+    }
+
+    /// <inheritdoc/>
+    public void StopWatching()
+    {
+        if (!_watching)
+        {
+            return;
+        }
+
+        _watching = false;
+        Action? stopped = _stopped;
+        _stopped = null;
+        stopped?.Invoke();
+    }
+
+    private static bool MovePressed() =>
+        Input.IsActionJustPressed("move_left") || Input.IsActionJustPressed("move_right") ||
+        Input.IsActionJustPressed("move_forward") || Input.IsActionJustPressed("move_back");
 
     /// <summary>
     /// The player's body does not collide with loose objects: it would get stuck on

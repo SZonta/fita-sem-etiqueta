@@ -291,6 +291,24 @@ Feito em 2026-11-14. O dono aprovou a planta antes da modelagem e a aparência j
 
 **Desempenho:** cerca de 410 quadros por segundo a 1080p (Vulkan); Direct3D 12, cerca de 530. Fica o Vulkan; medir de novo na entrega 18.
 
+### Decisão da entrega 6: as fitas
+
+Feito em 2026-11-19. Primeira entrega com a arte pelo Gemini. O dono escolheu, antes do código: cena ao vivo (e não vídeo pré-renderizado), testar antes de rebobinar, olhar preso na TV e os defeitos da opção "C" de uma página de teste com 5 opções.
+
+**Rotina:** a bandeja tem 4 fitas devolvidas, paradas no fim (sem rebobinar): Aventura, Suspense, Terror e a comédia adulterada. O videocassete toca a fita de onde ela está: devolvida, mostra o fim dos créditos ("FIM"), preto, e então chuvisco ou, na adulterada, ~10 s da fachada da locadora à noite; depois tela azul, e a fita sai do aparelho. Rebobinada, mostra o título do filme. A rebobinadeira deixa a fita rebobinada, mas só aceita fita testada até o fim ("Teste antes"; achado do `reviewer`: rebobinada antes do teste, a gravação depois dos créditos nunca mais apareceria). A estante aceita a fita só no vão do gênero dela. Guardar sem testar ou sem rebobinar ainda é possível: a lista de missões é da entrega 9.
+
+**Pôr um item num lugar** (interface `IReceiver`, camada de física 5 `slots`): com o item na mão, um raio que enxerga áreas acha o lugar mirado (vão da estante, videocassete, rebobinadeira). O lugar diz se aceita (dica com a ação) ou por que não (dica sem tecla, como "Prateleira de TERROR"), e onde o item fica. Pôr é a pegada tocada ao contrário: o relógio da pegada corre para trás, com o mesmo caminho planejado e varrido, a mesma aproximação (de cima ou pela frente, sob uma tábua) e o mesmo agachar. No fim, o item fica parado no lugar (`Pickable.SetDown`, congelado até ser pego de novo) e o lugar é avisado. É como um `onDrop` de arrastar e soltar: o alvo decide se aceita. Lugar ocupado (videocassete com fita, rebobinadeira trabalhando, vão cheio) não mostra dica e não deixa soltar o item em cima.
+
+**Assistir** (interface `IViewer`, implementada pelo `PlayerController`): os pés deslizam até um ponto (respeitando o balcão), o corpo se inclina até os olhos ficarem a 1,5 m de altura e 40 cm da tela, e o olhar trava na TV, com o mouse livre por uns 17° para cada lado. Mover ou E para; o fim da fita também.
+
+**Imagem da fita:** um `SubViewport` de 320x240 com mundo próprio. Os créditos são texto 2D (`Label` por chave de tradução); a gravação caseira é uma cena 3D (`tapes/tape_shot.tscn`): a fachada (`assets/models/facade/`) e a própria loja (`store.gltf`, porta de aço escondida) vistas do outro lado da rua, câmera de 34° na vertical segurada na mão (deriva lenta, tremor, zoom lento), luz de poste de vapor de mercúrio e ganho de filmadora (exposição 1,4). Só desenha enquanto a TV mostra imagem: custa 0,17 ms de GPU por quadro (a cena inteira, 1,05 ms, a 720p). A cena de agora será a da rua na entrega 8: da cadeira do bar, o jogador verá o mesmo enquadramento.
+
+**Defeitos de fita** (`tapes/tape_screen.gdshader`, só na TV): ruído nas últimas linhas, quase todo escondido pela moldura do tubo (a TV de tubo corta as bordas; fato da pesquisa); na emenda, a imagem rola e uma faixa de tracking passa por 0,65 s; a gravação caseira é uma cópia (mole, cor borrada para a direita, tremor de linha, granulado de ganho alto); riscos brancos raros. Tudo é calculado em sRGB e convertido para linear no fim: somado à cor linear, o granulado cobria os escuros e a fachada sumia.
+
+**Rebobinadeira:** modelo do Gemini (`rewinder.glb`) com tampa, botão, luz e o ponto da fita. Parada, fica de tampa aberta (100°, e não 75°: a fita sairia cruzando a borda da tampa); com a fita, fecha, acende a luz por 4 s e abre.
+
+**Como foi testado:** 5 roteiros sem janela (pegar da bandeja; guardar e pegar de volta; gênero errado; videocassete do começo ao fim e pegar a fita que sai; rebobinar e pegar), com a fita conferida contra o cenário quadro a quadro. Depois, 5 gravações com janela. Defeitos achados assim: olhos a 22 cm da tela ao assistir (o balcão segura os pés); fachada escura e granulada na TV (cor linear).
+
 ## 5. Qualidade
 
 - Lógica de história coberta por testes xUnit (cada final, cada condição).

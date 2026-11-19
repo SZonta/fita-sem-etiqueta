@@ -17,3 +17,32 @@ SIGN_GENRE_ROMANCE,ROMANCE,ROMANCE,ROMANCE
 SIGN_GENRE_KIDS,INFANTIL,KIDS,INFANTILES
 SIGN_GENRE_ADULT,ADULTO,ADULT,ADULTOS
 SIGN_ADULTS_ONLY,PROIBIDO P/ MENORES DE 18,NO ONE UNDER 18,PROHIBIDO MENORES DE 18
+INTERACT_SHELVE,[E] Guardar em {0},[E] Shelve in {0},[E] Guardar en {0}
+SHELF_WRONG_GENRE,Prateleira de {0},{0} shelf,Estante de {0}
+INTERACT_TEST,[E] Testar,[E] Test,[E] Probar
+INTERACT_REWIND,[E] Rebobinar,[E] Rewind,[E] Rebobinar
+TAPE_ALREADY_REWOUND,Já rebobinada,Already rewound,Ya rebobinada
+INTERACT_STOP,[E] Parar,[E] Stop,[E] Detener
+TAPE_TITLE_ADVENTURE,Os Sete Sinos de Kalanor,The Seven Bells of Kalanor,Las siete campanas de Kalanor
+TAPE_TITLE_THRILLER,Ninguém Atende na Rua Dunmore,No Answer on Dunmore Street,Nadie contesta en la calle Dunmore
+TAPE_TITLE_HORROR,Brackwood: A Casa Que Observa,Brackwood,Brackwood: la casa que observa
+TAPE_TITLE_COMEDY,A Galinha Que Ganhou na Loteria,The Hen That Won the Lottery,La gallina que ganó la lotería
+CREDITS_ROLE_DIRECTOR,Direção,Directed by,Dirección
+CREDITS_ROLE_PHOTOGRAPHY,Fotografia,Cinematography,Fotografía
+CREDITS_ROLE_MUSIC,Música,Music,Música
+CREDITS_THE_END,FIM,THE END,FIN
+CREDITS_NAME_ADVENTURE_1,Gordon Teague,Gordon Teague,Gordon Teague
+CREDITS_NAME_ADVENTURE_2,Harlan Voss,Harlan Voss,Harlan Voss
+CREDITS_NAME_ADVENTURE_3,Leonard Pruitt,Leonard Pruitt,Leonard Pruitt
+CREDITS_NAME_THRILLER_1,Diane Castellow,Diane Castellow,Diane Castellow
+CREDITS_NAME_THRILLER_2,Peter Lindqvist,Peter Lindqvist,Peter Lindqvist
+CREDITS_NAME_THRILLER_3,Alan Reiss,Alan Reiss,Alan Reiss
+CREDITS_NAME_HORROR_1,Franco Restelli,Franco Restelli,Franco Restelli
+CREDITS_NAME_HORROR_2,Aldo Ferrante,Aldo Ferrante,Aldo Ferrante
+CREDITS_NAME_HORROR_3,Bruno Castagna,Bruno Castagna,Bruno Castagna
+CREDITS_NAME_COMEDY_1,Ademar Pacheco,Ademar Pacheco,Ademar Pacheco
+CREDITS_NAME_COMEDY_2,Jurandir Tavares,Jurandir Tavares,Jurandir Tavares
+CREDITS_NAME_COMEDY_3,Toninho Arruda,Toninho Arruda,Toninho Arruda
+SIGN_STORE_NAME,ASTRO VÍDEO,ASTRO VÍDEO,ASTRO VÍDEO
+TAPE_TEST_FIRST,Teste antes,Test it first,Pruébala antes
+TAPE_CAPTION,{0} ({1}),{0} ({1}),{0} ({1})

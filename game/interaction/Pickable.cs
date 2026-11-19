@@ -19,9 +19,26 @@ public partial class Pickable : RigidBody3D, IInteractable
     /// <summary>Half the size of the box around <see cref="Shape"/>, along each of the object's own axes.</summary>
     public Vector3 HalfSize { get; private set; }
 
+    /// <summary>What the object is, from a child that tells (see <see cref="IDescribed"/>); "" if none does.</summary>
+    public string Caption
+    {
+        get
+        {
+            foreach (Node child in GetChildren())
+            {
+                if (child is IDescribed described)
+                {
+                    return described.Caption;
+                }
+            }
+            return "";
+        }
+    }
+
     public override void _Ready()
     {
         HalfSize = Shape.GetDebugMesh().GetAabb().Size / 2;
+        _collisionLayer = CollisionLayer;
     }
 
     public void Interact(Interactor interactor) => interactor.Hold(this);
@@ -33,7 +50,6 @@ public partial class Pickable : RigidBody3D, IInteractable
     public void AttachTo(Node3D holder)
     {
         _home = GetParent();
-        _collisionLayer = CollisionLayer;
 
         Freeze = true;
         CollisionLayer = 0; // Nothing bumps into it or aims at it while it is carried.
@@ -44,13 +60,25 @@ public partial class Pickable : RigidBody3D, IInteractable
     /// <summary>Goes back to the world, falling from where it was held.</summary>
     public void Release()
     {
-        Reparent(_home);
-
-        CollisionLayer = _collisionLayer;
+        SetDown(GlobalTransform);
         Freeze = false;
         Sleeping = false;
+    }
+
+    /// <summary>
+    /// Goes back to the world at this spot and stays there, still (stood on a shelf, in a machine),
+    /// until it is picked up again.
+    /// </summary>
+    public void SetDown(Transform3D at)
+    {
+        Reparent(_home);
+        GlobalTransform = at;
+        CollisionLayer = _collisionLayer;
 
         // Back under physics interpolation: without this it would glide in from its old spot.
         ResetPhysicsInterpolation();
     }
+
+    /// <summary>Whether it can be aimed at and picked up (not while a machine has it inside).</summary>
+    public void SetReachable(bool reachable) => CollisionLayer = reachable ? _collisionLayer : 0;
 }
