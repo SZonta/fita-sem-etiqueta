@@ -3,7 +3,7 @@
 Fonte de verdade do projeto **Fita Sem Etiqueta**. Qualquer sessão nova começa lendo este arquivo.
 Atualizar SEMPRE antes de cada commit.
 
-Última atualização: 2026-11-14 (fim da Entrega 5: a locadora).
+Última atualização: 2026-11-19 (a parte visual passa a ser gerada pelo Gemini; a entrega 6 ainda não começou).
 
 ## 1. Estado atual
 
@@ -11,6 +11,7 @@ Atualizar SEMPRE antes de cada commit.
 - **Etapa 2 (Planejamento):** concluída e aprovada em 2026-11-11.
 - **Etapa 3 (Desenvolvimento):** em andamento. Entregas 1 ("Instalação e projeto vazio") e 2 ("Filtro VHS e menu") concluídas e aprovadas em 2026-11-11. Entrega 3 ("Física e interação") concluída e aprovada em 2026-11-12. Entrega 4 ("Corpo do Nondas") concluída em duas sessões: parte 1 (pernas) aprovada em 2026-11-13, parte 2 (mão) aprovada em 2026-11-14. **Entrega 5 ("A locadora") aprovada em 2026-11-14.**
 - **Próxima entrega: 6, "As fitas"** (ver seção 9).
+- **Arte:** desde 2026-11-19, a parte visual é gerada pelo Gemini e revisada pelo Claude (seção 4, "Arte com o Gemini"). A entrega 6 é a primeira nesse fluxo.
 - **Código de jogo:** projeto Godot em `game/`:
   - `levels/store/store.tscn`: **a Astro Vídeo Locadora, cena principal (F5)**. Instancia o cenário (`assets/models/store/store.gltf`, filhos editáveis), 7 luzes com sombra, uma sonda de reflexo, as placas de gênero (`Label3D` com chave de tradução), o jogador, o filtro VHS, o menu de pausa e 5 fitas de teste (balcão, dois vãos da estante atrás do balcão, bandeja de devolução). `floor.tres` repete o material do piso ligando a cor de vértice (desgaste), que o importador de glTF deixa desligada.
   - `levels/test_room/test_room.tscn`: sala cinza de teste. Instancia o jogador, o filtro VHS e o menu de pausa. Tem uma lata vermelha, uma poça e uma caixa amarela do tamanho de uma fita VHS em cima do caixote, na borda (o braço alcança até uns 70 cm à frente).
@@ -46,7 +47,7 @@ Atualizar SEMPRE antes de cada commit.
 - Duração mínima de 40 minutos (estimada: 41 a 53).
 - Três idiomas com troca dentro do jogo: português, inglês e espanhol. Localização planejada desde o início.
 - Jogo curto, mas caprichado: pequenos detalhes importam.
-- Somente ferramentas gratuitas.
+- Somente ferramentas gratuitas. Assistentes de IA (Claude e Gemini) não contam; ver `CLAUDE.md`.
 
 ### Mecânicas de imersão exigidas
 
@@ -94,9 +95,9 @@ Os três documentos abaixo são a referência completa. Esta seção é só o re
 | Camadas de física | 1 `world`, 2 `player`, 3 `props` (objetos soltos), 4 `feet` (pés do jogador). O jogador não colide com objetos soltos: ele os chuta com os pés. Tabela completa em `docs/design/02-stack-architecture.md` |
 | Corpo do jogador | Modelo próprio sobre a malha do MPFB, visível em primeira pessoa. Animações geradas por script (parado, andando nas 4 direções, agachar para pegar). Braço direito por cinemática inversa (`TwoBoneIK3D`). Detalhes em `docs/design/02-stack-architecture.md`, decisões da entrega 4 (partes 1 e 2) |
 | Interação | Tecla E. Raio de 2 m que sai da câmera, com uma esfera de 8 cm quando o raio não acerta; o alvo implementa `IInteractable`. Item solto só se pega se o braço alcança (agachando se preciso; o item desliza no máximo 10 cm até a mão) e se a linha do ombro ao pulso não atravessa nada. O caminho do item até a mão é planejado e varrido: sob uma tábua, ele é puxado para fora antes de subir. Um item na mão por vez, sem inventário. A dica na tela fica acima do filtro VHS. Detalhes em `docs/design/02-stack-architecture.md`, decisão da entrega 5 |
-| Cenário | Gerado por script do Blender, exportado em **glTF separado** (`.gltf` + `.bin` + PNG), para textura que não muda não pesar de novo no histórico. Colisão feita de caixas nomeadas `-convcolonly` no próprio script. Texturas importadas com mipmaps e compressão de vídeo (ajuste feito à mão nos `.import`; sem isso o granilite cintila a 480 linhas) |
-| Cenário e objetos | 100% próprios, gerados por script Python no Blender. Texturas procedurais |
-| Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios. Licença confirmada em 2026-11-12: os assets do MPFB são CC0 (só os pacotes CC0 são usados); o código do complemento é GPLv3 e não vai para o jogo. Registro em `docs/credits.md` |
+| Cenário | Gerado por script do Blender (escrito pelo Gemini desde 2026-11-19; ver "Arte com o Gemini"), exportado em **glTF separado** (`.gltf` + `.bin` + PNG), para textura que não muda não pesar de novo no histórico. Colisão feita de caixas nomeadas `-convcolonly` no próprio script. Texturas importadas com mipmaps e compressão de vídeo (ajuste feito à mão nos `.import`; sem isso o granilite cintila a 480 linhas) |
+| Cenário e objetos | 100% próprios, gerados por script Python no Blender. Texturas procedurais. Imagens do Gemini só como referência, nunca no jogo |
+| Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios (aparência pelo Gemini; esqueleto, pesos e animação pelo Claude, desde 2026-11-19). Licença confirmada em 2026-11-12: os assets do MPFB são CC0 (só os pacotes CC0 são usados); o código do complemento é GPLv3 e não vai para o jogo. Registro em `docs/credits.md` |
 | Áudio | Efeitos genéricos de acervos gratuitos, **somente licença CC0**, registrados em `docs/credits.md`. "Ruídos de fala" próprios |
 | Microfone | Opcional, desligado por padrão, última entrega de mecânica |
 
@@ -131,10 +132,39 @@ Os três documentos abaixo são a referência completa. Esta seção é só o re
 |---|---|
 | `researcher` | Fatos de época, documentação oficial, licenças. Só fontes confiáveis, com grau de confiança |
 | `reviewer` | Revisão sem editar, antes do OK do dono. Softlock em primeiro lugar |
-| `artist` | Scripts do Blender, materiais, shaders |
+| `artist` | Diretor de arte (desde 2026-11-19): escreve os prompts para o Gemini e revisa o que volta (render na câmera do jogo, medidas, triângulos, colisões, nomes). Não escreve scripts nem shaders |
 | `language` | Falas curtas em português e tradução para inglês e espanhol |
 
 A sessão principal orquestra, desenvolve e faz o commit. Não existem agentes Orchestrator, Developer nem Commiter: um subagente não consegue chamar outros, um Developer separado perderia o contexto da conversa com o dono, e o commit é um comando cujas regras estão no `CLAUDE.md`. Todos os agentes herdam o modelo e o esforço da sessão.
+
+### Arte com o Gemini (decidido em 2026-11-19)
+
+O dono assina o Google AI Pro. Desde 2026-11-19, a parte visual é gerada pelo Gemini. O fluxo de 1 entrega = 1 sessão não muda: muda só quem escreve os scripts de arte. Base da decisão (testes de 2026-11-18): um orelhão e a locadora inteira gerados pelo Gemini rodaram de primeira no Blender; a locadora saiu fiel à planta num prompt só e chegou perto da aprovada depois de uma rodada de correção.
+
+| Gemini | Claude |
+|---|---|
+| Scripts do Blender de cenário, objetos, texturas procedurais, capas, cartazes e rótulos | Prompts, pesquisa de época (`researcher`), revisão e integração no Godot |
+| Aparência dos personagens: corpo pelo MPFB, rosto, roupas, acessórios, materiais | Esqueleto, pesos (o que prende a roupa ao esqueleto), animações e exportação dos personagens |
+| Imagens e vídeos de referência (textura, roupa, ambiente) | Shaders (VHS, chuva, poça), luzes, materiais de correção (`.tres`), ajustes de importação (`.import`) |
+| | Código C#, testes, commit e push (repositório público e `tools/blender/`) |
+
+**Fluxo de um asset:**
+
+1. O Claude, com o `artist`, escreve o prompt e manda ao dono no chat.
+2. O dono cola no Gemini e salva o resultado na pasta `Downloads`.
+3. O Claude pega em `Downloads` o arquivo mais recente do Gemini (`gemini-code-*.py`, `Gemini_Generated_Image_*`, `gemini_generated_video_*`). Não mexe nem apaga nenhum outro arquivo dessa pasta.
+4. O Claude lê o script inteiro antes de rodar (numa correção, o que mudou em relação à versão anterior), roda, renderiza na câmera do jogo e confere medidas, triângulos, colisões e nomes. Só então copia para `tools/blender/`.
+5. Aparência a corrigir vira um prompt de correção, na mesma conversa do Gemini, e volta ao passo 1. Erro mecânico que não muda a aparência (nome de objeto, colisão, caminho de exportação, semente) o Claude corrige direto e avisa no relatório da entrega.
+
+**Regras:**
+
+- **Script que já existe:** para o Gemini alterá-lo, o dono anexa no Gemini a versão atual junto com o prompt. O `store.py` vai sempre com o `tape.py`, de onde importa as medidas da fita. Só o script em questão sai do repositório privado.
+- **Referência nunca entra no jogo** (decisão de 2026-11-18): imagens e vídeos do Gemini servem para o script imitar. Ficam em `tools/blender/reference/`; imagens são versionadas no repositório privado, vídeos não.
+- **Prompt só com o que o asset precisa.** Nada de finais nem reviravoltas da história: o que vai no prompt fica com o Google.
+- **O Claude nunca aciona o Gemini.** A FAQ do Antigravity (conferida em 2026-11-19) diz que o `agy -p` "is intended for direct scripting and CI workflows", que envolvê-lo em agentes ou aplicativos de terceiros não é suportado nos planos pessoais e que usar o Claude Code com o login do Antigravity viola os termos e pode suspender a conta. Controlar o app do Gemini pela tela também não é usado.
+- **Modelos:** scripts no Neon, raciocínio Médio (Alto se a resposta falhar); imagens no Hydrogen, raciocínio Baixo; vídeo só quando valer o custo.
+- **Custo medido em 2026-11-18** (janela de 5 h do Google AI Pro): vídeo de 10 s, 20%; imagem, 1%; script do Blender, menos de 1%. A página "Limites de uso" do app fica em cache: recarregar o app (Ctrl+R) antes de ler.
+- **Todo prompt de script diz, e o `artist` confere na volta:** eixos e origem; medidas; nomes dos objetos que o código usa; colisão `-convcolonly` por peça (cada tábua, lateral, fundo e tampo), uma caixa por trecho contínuo de fitas ou caixas e 2 cm livres acima de item em prateleira (seção 8); só Principled BSDF, com texturas geradas por código e semente fixa (o mesmo script gera o mesmo arquivo); nada de marca, logo ou texto legível; leve para 480 linhas; formato e caminho de exportação.
 
 ### MVP
 
@@ -218,6 +248,8 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 ### Blender (gerar modelos)
 
 - Rodar um script: `C:/Tools/Blender/5.2.4/blender-5.2.4-windows-x64/blender.exe --background --python tools/blender/<script>.py`, a partir da raiz do projeto. Não abre janela e não precisa de liberação. O corpo do Nondas leva cerca de 4 s.
+- **Script do Gemini** (seção 4, "Arte com o Gemini"): rodar primeiro com `--out` numa pasta fora do repositório e renderizar a câmera do jogo; só depois da revisão copiar para `tools/blender/` e gerar em `game/assets/`, para o dono testar no jogo. Rodar duas vezes e conferir que os arquivos saem idênticos.
+- **Conferir um vídeo do Gemini:** servir o MP4 por um servidor local e abrir no painel do navegador do app, com o painel **visível**, capturando quadros com o vídeo tocando (`requestVideoFrameCallback`). Com o painel escondido o vídeo não decodifica, e a busca por `currentTime` devolve sempre o primeiro quadro. O áudio não dá para ouvir; só medir o volume.
 - Depois de exportar um `.glb`: `..._console.exe --headless --import --path game`.
 - **Ver a aparência sem abrir o jogo:** renderizar no Blender (EEVEE em `--background` funciona) com uma câmera na altura e no campo de visão do jogo (75° na vertical, 854x480). Foi assim que o dono escolheu a roupa.
 - **Página de comparação no painel do navegador:** arquivo fora da pasta do projeto vira foto estática (sem JavaScript). Arquivo dentro do projeto abre como endereço `data:`, onde imagens com caminho relativo não carregam, e páginas grandes são recusadas. O que funcionou: servir uma pasta temporária com `python.exe -m http.server` (o Python do Blender) por uma entrada em `.claude/launch.json`, com as imagens em JPEG. Apagar a pasta e a entrada depois.
@@ -319,6 +351,7 @@ Windows 11. GPU NVIDIA RTX 3050 Laptop (4 GB), 16 GB de RAM, 353 GB livres em C:
 - O dono esvazia a bandeja de devoluções, rebobina, assiste na TV de teste e guarda as fitas por gênero na estante atrás do balcão. A primeira fita adulterada aparece: depois dos créditos, cerca de 10 s da fachada da locadora filmada do outro lado da rua, à noite (`docs/design/01-story.md`, noite 1, item 3).
 - **Guardar na estante** (pedido do dono na entrega 5): mirar num vão, "[E] Guardar", a mão encaixa a fita em pé, lombada para fora, com animação. Usar o caminho planejado e varrido da pegada, ao contrário. As 5 fitas de teste de `store.tscn` saem.
 - Rebobinadeira e videocassete na loja: posições na seção 8 ("Locadora, peças estáticas"); a tela da TV é o objeto `TvScreen`.
+- **Primeira entrega no fluxo com o Gemini** (seção 4): a parte visual nova desta entrega, como a fachada da loja para a primeira fita (se for modelada), é pedida ao Gemini por prompt.
 - **Decisões a levar ao dono antes de programar:** como produzir as imagens das fitas (vídeo pré-renderizado no Blender ou cena ao vivo num `SubViewport`); a fachada da loja ainda não existe (a rua é da entrega 8). Quais defeitos de fita entram só nas fitas assistidas (faixa de tracking, riscos, tremor: seção 8).
 - Fatos de época pelo `researcher` se a fita depender deles (filmadora doméstica e carimbo de data e hora, cópia para VHS; preço de locação).
 - Fora desta entrega: personagens e diálogo (7), rua e bar (8), escolha "gaveta ou prateleira" e estado da história (9), som, sistema de ruído.

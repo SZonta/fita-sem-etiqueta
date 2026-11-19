@@ -10,10 +10,11 @@ O `CLAUDE.md` global do dono continua valendo (idioma, simplicidade, alteraçõe
 
 - Responder sempre em português do Brasil. Código, commits, nomes de arquivos, branches e comentários em inglês. Documentos de contexto (`CONTEXT.md`, `docs/`) em português.
 - **Nunca instalar ou baixar ferramenta sem autorização explícita.** Antes de pedir, informar: o que é, de onde vem, tamanho aproximado e por que é necessária.
-- Somente ferramentas gratuitas e de fonte confiável.
+- Somente ferramentas gratuitas e de fonte confiável. Os assistentes de IA (Claude e Gemini, assinaturas do dono) não contam: o que gera e roda o jogo e a arte (Godot, Blender, scripts) continua gratuito.
 - Nada global: agentes, configurações e contexto ficam dentro deste repositório (`./CLAUDE.md`, `./.claude/agents/`). A identidade git também é local ao repositório.
 - Subagentes usam o mesmo modelo e o mesmo nível de esforço da sessão que os chamou.
 - A sessão principal orquestra, desenvolve e faz o commit. Os agentes de `./.claude/agents/` (`researcher`, `reviewer`, `artist`, `language`) são acionados por ela para tarefas específicas.
+- **A parte visual é gerada pelo Gemini (decisão do dono, 2026-11-19).** O Claude escreve o prompt e manda ao dono; o dono cola no Gemini e deixa o resultado na pasta `Downloads`; o Claude lê, roda, revisa e integra. Código, pesquisa, revisão, esqueleto, pesos e animação dos personagens, shaders, acabamento no Godot e commit continuam com o Claude. O Claude nunca aciona o Gemini sozinho. Divisão completa e regras em `CONTEXT.md`, seção 4, "Arte com o Gemini".
 - Discordar com franqueza quando houver ideia melhor, explicando o motivo.
 - Não presumir. Ambiguidade que impacta o projeto vira pergunta.
 - Priorizar entregas visuais: toda entrega deve ter algo que o dono consiga ver ou jogar.

@@ -9,9 +9,9 @@ Etapa 2 do projeto. Status: **aprovado pelo dono em 2026-11-11**, com um ajuste 
 | Motor | Godot 4, edição .NET | Versão estável em 2026-11-11: 4.7.2 (fonte: godotengine.org) |
 | Linguagem | C# | Exige .NET SDK 8 ou superior (fonte: documentação oficial do Godot) |
 | Estilo visual | Semi-realista sob filtro VHS | Proporções reais, geometria moderada, textura de resolução modesta |
-| Cenário e objetos | 100% próprios, gerados por script no Blender | Texturas procedurais, sem fotos |
-| Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios | Licença confirmada em 2026-11-12: assets CC0, ver `docs/credits.md` |
-| Paçoca | Modelado do zero | |
+| Cenário e objetos | 100% próprios, gerados por script no Blender | Texturas procedurais, sem fotos. Scripts escritos pelo Gemini desde 2026-11-19 (seção 3) |
+| Personagens humanos | Malha base de gerador gratuito (MPFB/MakeHuman) + rosto, roupa, textura e animação próprios | Licença confirmada em 2026-11-12: assets CC0, ver `docs/credits.md`. Aparência pelo Gemini; esqueleto, pesos e animação pelo Claude (2026-11-19) |
+| Paçoca | Modelado do zero | Aparência pelo Gemini; esqueleto, pesos e animação pelo Claude (2026-11-19) |
 | Áudio | Bases existentes + edição própria | Efeitos genéricos (lata, latido, chuva, passos) vêm de acervos gratuitos. **Somente licença CC0**, porque o repositório é público e publicar o arquivo conta como redistribuição. Cada som é registrado com fonte e licença em `docs/credits.md`. Os "ruídos de fala" dos personagens são próprios |
 | Microfone | Opcional, desligado por padrão | Última entrega do MVP |
 | Plataforma | Windows (Steam) | C# no Godot 4 não exporta para web; não afeta o projeto |
@@ -107,8 +107,10 @@ Organização por funcionalidade, como pastas de feature em um projeto Next.js, 
 
 ## 3. Pipeline de arte
 
+**Quem faz (decisão do dono, 2026-11-19):** os scripts do Blender de cenário, objetos e aparência dos personagens são escritos pelo Gemini, a partir de prompts do Claude, e revisados, rodados e integrados pelo Claude. Esqueleto, pesos, animações e exportação dos personagens, shaders e acabamento no Godot ficam com o Claude. Imagens e vídeos do Gemini servem só de referência (`tools/blender/reference/`) e nunca entram no jogo. Fluxo e regras em `CONTEXT.md`, seção 4, "Arte com o Gemini".
+
 1. **Cenário e objetos:** um script Python por objeto em `tools/blender/`, executado pelo Blender em modo de linha de comando. O script cria a geometria e o material procedural, gera a textura em PNG e exporta `.glb` (objetos pequenos e personagens) ou glTF separado, `.gltf` + `.bin` + PNG (cenário com texturas grandes; decisão da entrega 5). O modelo é reproduzível a partir do código, como infraestrutura como código.
-2. **Personagens:** malha base do gerador, depois rosto, roupa e textura ajustados; esqueleto padrão; animações feitas por quadros-chave. Poucas animações por personagem: parado, falando com gesto, andando. O Freguês tem também procurar e correr.
+2. **Personagens:** malha base do gerador, depois rosto, roupa e textura ajustados (script do Gemini); esqueleto padrão, pesos e animações feitas por quadros-chave (Claude). Poucas animações por personagem: parado, falando com gesto, andando. O Freguês tem também procurar e correr.
 3. **Formato de troca:** glTF 2.0 (`.glb`), aberto e importado nativamente pelo Godot.
 4. **Áudio:** efeitos genéricos baixados de acervos CC0 (o agente de pesquisa indica a fonte e confere a licença de cada arquivo); "ruídos de fala" gravados pelo dono. Tudo editado no Audacity e exportado em OGG. Registro em `docs/credits.md`.
 
