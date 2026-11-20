@@ -137,8 +137,9 @@ Os três documentos abaixo são a referência completa. Esta seção é só o re
 | `reviewer` | Revisão sem editar, antes do OK do dono. Softlock em primeiro lugar |
 | `artist` | Diretor de arte (desde 2026-11-19): escreve os prompts para o Gemini e revisa o que volta (render na câmera do jogo, medidas, triângulos, colisões, nomes). Não escreve scripts nem shaders |
 | `language` | Falas curtas em português e tradução para inglês e espanhol |
+| `scout` | Batedor de leitura (desde 2026-11-19), no Haiku: acha e resume trechos de arquivos grandes (scripts do Blender, logs, `docs/`) para economizar contexto. Só lê; não edita, não decide, não revisa |
 
-A sessão principal orquestra, desenvolve e faz o commit. Não existem agentes Orchestrator, Developer nem Commiter: um subagente não consegue chamar outros, um Developer separado perderia o contexto da conversa com o dono, e o commit é um comando cujas regras estão no `CLAUDE.md`. Todos os agentes herdam o modelo e o esforço da sessão.
+A sessão principal orquestra, desenvolve e faz o commit. Não existem agentes Orchestrator, Developer nem Commiter: um subagente não consegue chamar outros, um Developer separado perderia o contexto da conversa com o dono, e o commit é um comando cujas regras estão no `CLAUDE.md`. Todos os agentes herdam o modelo e o esforço da sessão, exceto o `scout`, que roda no Haiku por só buscar e ler.
 
 ### Arte com o Gemini (decidido em 2026-11-19)
 
