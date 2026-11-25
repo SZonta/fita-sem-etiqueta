@@ -28,7 +28,7 @@ Em junho de 1996, o atendente de uma locadora do interior paulista descobre, fit
 - **Datas:** quinta 13, sexta 14 e sábado 15 de junho de 1996. Época de festa junina: bandeirinhas na rua, quermesse ao longe, rojões. Noites frias. No sábado chega uma frente fria com chuva. A quermesse traz gente de fora, por isso um rosto desconhecido não chama atenção.
 - **Cidade:** Dois Córregos, interior de São Paulo.
 - **Ambientes (3):**
-  1. **Astro Vídeo Locadora.** Térreo de um sobrado. Balcão, prateleiras por gênero (na prateleira, só a caixa com a capa; a fita fica na estante atrás do balcão), TV de teste com videocassete, rebobinadeira, fenda de devolução na parede da frente com bandeja por dentro, seção adulta atrás de uma cortina, depósito nos fundos, porta de aço de enrolar. Planta em `02-stack-architecture.md`, decisão da entrega 5.
+  1. **Astro Vídeo Locadora.** Térreo de um sobrado. Balcão, prateleiras por gênero (na prateleira, só a caixa com a capa; a fita fica na estante atrás do balcão), TV de teste com videocassete, rebobinadeira, fenda de devolução na parede da frente com bandeja por dentro, seção adulta atrás de uma cortina, depósito nos fundos, porta de aço de enrolar. Planta em `04-decisions-log.md` (Entrega 5).
   2. **A rua.** Um quarteirão. Bar e Lanchonete do Tião (mesa de sinuca, cadeiras de plástico na calçada), orelhão na esquina, poste de luz, bandeirinhas, latas, poças no sábado.
   3. **A quitinete.** Nos fundos do sobrado, acesso por um corredor lateral com portão. Um cômodo, banheiro, janela para o quintal, guarda-roupa, cama, fogareiro.
 
@@ -135,10 +135,10 @@ O tempo sentado no bar é livre e não entra na conta.
 
 As escolhas "armadilha", "final secreto" e "6 personagens" colocam o projeto no teto do escopo recomendado pela pesquisa (lição 5). Mitigação proposta: no MVP, a armadilha e o final secreto são as últimas entregas, de modo que o jogo já seja completo e publicável sem elas.
 
-## A verificar pelo agente Research (risco de anacronismo)
+## A verificar em pesquisa de época (`fse-pesquisa-epoca` — risco de anacronismo)
 
 - Dois Córregos em 1996: DDD, população, clima em junho, tradição de quermesse, aparência das ruas e do comércio.
 - Orelhão em 1996: ficha ou cartão telefônico, e se a ligação de emergência era gratuita.
 - Preço de locação e moeda (Real, desde 1994).
-- Formato da filmadora doméstica da época, como se copiava para VHS e como era o carimbo de data e hora na imagem.
+- Formato brasileiro do carimbo de data e hora na imagem de filmadoras domésticas de 1996 (base técnica geral já levantada em `docs/research/06-home-video-1996.md`).
 - Viatura e farda da Polícia Militar paulista na época.

@@ -46,7 +46,7 @@ A armadilha, o final secreto e o microfone ficam no marco 3 de propósito. Se o 
 | 16 | Final secreto | Resolve tudo na sexta e assiste à prisão da cadeira do bar |
 | 17 | Microfone opcional | Liga o microfone no menu e o seu barulho real denuncia o esconderijo |
 | 18 | Polimento | Jogo inteiro com som, luz e textos revisados. Partida completa sem softlock |
-| 19 | Release | Versão para Windows, página da Steam, repositório sem arquivos do Claude |
+| 19 | Release | Versão para Windows, página da Steam, repositório limpo sem arquivos internos de IA |
 
 ## Onde cada personagem entra
 
@@ -67,7 +67,7 @@ A armadilha, o final secreto e o microfone ficam no marco 3 de propósito. Se o 
 ### Esforço de desenvolvimento
 
 - **19 entregas planejadas.**
-- **Conte com 25 a 35 sessões.** Entregas com personagem novo (4, 7, 8, 9, 10) e as do clímax (12, 13) tendem a se dividir em duas. É uma estimativa, não uma medição: nenhuma entrega foi feita ainda.
+- **Conte com 25 a 35 sessões.** Entregas com personagem novo (4, 7, 8, 9, 10) e as do clímax (12, 13) tendem a se dividir em duas (estimativa inicial da Etapa 2; progresso real acompanhado em `STATUS.md`).
 - Em calendário: com 3 sessões por semana, de 2 a 3 meses. Com 1 por semana, de 6 a 8 meses.
 - A estimativa é revista ao final do marco 1, com o ritmo real medido.
 
