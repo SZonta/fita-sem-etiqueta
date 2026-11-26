@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="Script" path="res://npc/DogPacoca.cs" id="1_script"]
+[ext_resource type="PackedScene" path="res://assets/models/pacoca.glb" id="2_model"]
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_pacoca"]
+size = Vector3(0.40, 0.44, 0.85)
+
+[node name="Pacoca" type="StaticBody3D"]
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("1_script")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.22, -0.05)
+shape = SubResource("BoxShape3D_pacoca")
+
+[node name="Model" parent="." instance=ExtResource("2_model")]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0)
+
+[node name="Voice" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.35, -0.35)
+max_distance = 10.0
+unit_size = 2.0

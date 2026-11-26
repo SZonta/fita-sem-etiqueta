@@ -62,9 +62,14 @@ public partial class PlayerController : CharacterBody3D, IViewer
     private float _watchPitch;
     private Vector2 _watchLook;
     private Action? _stopped;
+    private Action? _watchInteract;
+    private string _watchPromptKey = "INTERACT_STOP";
 
     /// <inheritdoc/>
     public bool Watching => _watching;
+
+    /// <inheritdoc/>
+    public string WatchPromptKey => _watchPromptKey;
 
     public override void _Ready()
     {
@@ -166,9 +171,20 @@ public partial class PlayerController : CharacterBody3D, IViewer
             Vector3 glide = (toSpot / (float)delta).LimitLength(WalkSpeed);
             velocity.X = glide.X;
             velocity.Z = glide.Z;
-            if (Input.IsActionJustPressed("interact") || MovePressed())
+            if (MovePressed())
             {
                 StopWatching();
+            }
+            else if (Input.IsActionJustPressed("interact"))
+            {
+                if (_watchInteract != null)
+                {
+                    _watchInteract();
+                }
+                else
+                {
+                    StopWatching();
+                }
             }
         }
 
@@ -185,7 +201,7 @@ public partial class PlayerController : CharacterBody3D, IViewer
     }
 
     /// <inheritdoc/>
-    public void Watch(Vector3 eyes, Vector3 target, Action stopped)
+    public void Watch(Vector3 eyes, Vector3 target, Action stopped, Action? onInteract = null, string promptKey = "INTERACT_STOP")
     {
         // The bend that puts the eyes at the height asked for (the stoop lowers them all the way down).
         float height = eyes.Y - GlobalPosition.Y;
@@ -205,6 +221,8 @@ public partial class PlayerController : CharacterBody3D, IViewer
         _watchFeet = eyes - new Basis(Vector3.Up, _watchYaw) * _body.EyesAt(_watchDepth);
         _watchLook = Vector2.Zero;
         _stopped = stopped;
+        _watchInteract = onInteract;
+        _watchPromptKey = promptKey;
         _watching = true;
     }
 
@@ -219,6 +237,8 @@ public partial class PlayerController : CharacterBody3D, IViewer
         _watching = false;
         Action? stopped = _stopped;
         _stopped = null;
+        _watchInteract = null;
+        _watchPromptKey = "INTERACT_STOP";
         stopped?.Invoke();
     }
 
@@ -277,7 +297,15 @@ public partial class PlayerController : CharacterBody3D, IViewer
         float kickSpeed = closingSpeed * KickStrength;
         body.ApplyCentralImpulse((away + Vector3.Up * KickLift) * kickSpeed * body.Mass);
 
-        // Topples forward, as if hit above its middle. Without the spin a can slides away standing up.
-        body.AngularVelocity = Vector3.Up.Cross(away) * kickSpeed * KickSpin;
+        // Tomba para frente e acrescenta giro lateral determinístico proporcional ao desvio do chute.
+        Vector3 spin = Vector3.Up.Cross(away) * kickSpeed * KickSpin;
+        Vector3 flatVel = new Vector3(Velocity.X, 0, Velocity.Z);
+        if (!flatVel.IsZeroApprox())
+        {
+            Vector3 lateral = Vector3.Up.Cross(flatVel.Normalized());
+            float offset = Mathf.Clamp((body.GlobalPosition - ankle).Dot(lateral), -0.08f, 0.08f);
+            spin += Vector3.Up * (offset * kickSpeed * KickSpin * 6.0f);
+        }
+        body.AngularVelocity = spin;
     }
 }

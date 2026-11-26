@@ -1,6 +1,6 @@
 # STATUS.md — Estado Atual e Próximas Entregas
 
-Última atualização: 2026-11-26 (Entrega 7 aprovada pelo dono).
+Última atualização: 2026-11-26 (Entrega 8 aprovada pelo dono).
 Atualizar este arquivo **sempre antes de cada commit de entrega**.
 
 ---
@@ -9,7 +9,7 @@ Atualizar este arquivo **sempre antes de cada commit de entrega**.
 
 - **Etapa 1 — Pesquisa (*Fears to Fathom*):** concluída e aprovada (2026-11-11). Ver `docs/research/01-fears-to-fathom.md`.
 - **Etapa 2 — Planejamento (História, Stack, Arquitetura e MVP):** concluída e aprovada (2026-11-11). Ver `docs/design/01-story.md`, `02-stack-architecture.md` e `03-mvp.md`.
-- **Etapa 3 — Desenvolvimento:** **7 de 19 entregas concluídas** (Marco 1: *Noite 1 jogável*, entregas 1 a 9):
+- **Etapa 3 — Desenvolvimento:** **8 de 19 entregas concluídas** (Marco 1: *Noite 1 jogável*, entregas 1 a 9):
   - [x] **Entrega 1:** Instalação e projeto vazio (sala cinza, 1ª pessoa, Forward+ Vulkan, Jolt, `net10.0`) — 2026-11-11
   - [x] **Entrega 2:** Filtro VHS e menu de pausa/opções (`Settings` autoload, 480 linhas 3D) — 2026-11-11
   - [x] **Entrega 3:** Física e interação (lata chutável, poça com ondulação, `Interactor` + `Pickable`) — 2026-11-12
@@ -17,43 +17,42 @@ Atualizar este arquivo **sempre antes de cada commit de entrega**.
   - [x] **Entrega 5:** A locadora (*Astro Vídeo Locadora*, `store.gltf`, 7 luzes, placas traduzidas, caminho varrido da pegada) — 2026-11-14
   - [x] **Entrega 6:** As fitas (bandeja de devolução, videocassete/TV com gravação ao vivo da fachada noturna, rebobinadeira, estante por gênero) — 2026-11-19
   - [x] **Entrega 7:** Diálogo e idiomas (Dona Neide, legendas inferiores + ruído de fala por formantes, troca de idioma e tamanho de legenda, carimbo `AUTO DATE`) — 2026-11-26
-  - [ ] **Entrega 8 (PRÓXIMA):** A rua e o bar
+  - [x] **Entrega 8:** A rua e o bar (cenário contínuo loja + rua + Bar do Tião, lata reutilizável, Tião, Paçoca, cadeira do refúgio com o enquadramento da 1ª fita) — 2026-11-26
+  - [ ] **Entrega 9 (PRÓXIMA):** Noite 1 completa
 
-Histórico técnico detalhado das entregas 1–7: `docs/design/04-decisions-log.md`.
+Histórico técnico detalhado das entregas 1–8: `docs/design/04-decisions-log.md`.
 
 ---
 
 ## 2. O Que Já Existe em `game/`
 
-- **Cena principal (F5):** `levels/store/store.tscn` (*Astro Vídeo Locadora* com `store.gltf`, `floor.tres`, meia-porta `SteelDoorHalf` + `facade.gltf` noturna visível fora, 7 luzes internas + `StreetLamp`, `ReflectionProbe`, placas `Label3D` traduzidas, jogador, filtro VHS, menu de pausa, 4 fitas devolvidas em `ReturnedTapes`, 3 fitas pegáveis em `RomanceTapes`, 5 vãos em `ShelfGaps`, `TapeDeck`, `Rewinder`, `RentalLedger`, `CounterSpot`, `DonaNeide`, `DialoguePlayer` e `SubtitleBox`).
-- **Cena de teste:** `levels/test_room/test_room.tscn` (sala cinza com lata vermelha, poça e caixa de teste).
+- **Cena principal (F5):** `levels/store/store.tscn` (*Astro Vídeo Locadora* + cenário contínuo da rua e *Bar do Tião*, com `store.gltf`, `floor.tres`, `facade.gltf`, `street.gltf`, soleira aberta com `SteelDoorHalf` oculta e `SteelDoorBarrier` desabilitada, 7 luzes internas + `StreetLamp` + `OppositeStreetLamp` + 3 luzes do bar, `ReflectionProbe`, placas `Label3D` traduzidas incluindo `SIGN_BAR_NAME`, jogador, filtro VHS, menu de pausa, 4 fitas devolvidas em `ReturnedTapes`, 3 fitas pegáveis em `RomanceTapes`, 5 vãos em `ShelfGaps`, `TapeDeck`, `Rewinder`, `RentalLedger`, `CounterSpot`, `DonaNeide`, `Tiao`, `Pacoca`, `BarRadio`, `RefugeChair`, 3 latas `StreetCans`, `DialoguePlayer` e `SubtitleBox`).
+- **Cena de teste:** `levels/test_room/test_room.tscn` (sala cinza com `props/can.tscn`, poça e caixa de teste).
 - **Sistemas prontos:**
   - `core/Settings.cs` (autoload: intensidade VHS padrão `0.7`, sensibilidade, volume, idioma `pt`/`en`/`es` e tamanho de legenda em `user://settings.cfg` — único dos 4 autoloads criado até agora).
-  - `player/` (`PlayerController.cs`, `PlayerBody.cs`, `HandAim.cs`, `FingerCurl.cs`, `player.tscn`).
-  - `interaction/` (`Interactor.cs`, `Pickable.cs`, interfaces `IInteractable` com `WorksWhileHolding`, `IReceiver`, `IReacher`, `IViewer`, `IDescribed`).
+  - `player/` (`PlayerController.cs` com giro lateral no chute e modo `Watch` com ação opcional, `PlayerBody.cs`, `HandAim.cs`, `FingerCurl.cs`, `player.tscn`).
+  - `interaction/` (`Interactor.cs`, `Pickable.cs`, `RefugeChair.cs`, interfaces `IInteractable` com `WorksWhileHolding`, `IReceiver`, `IReacher`, `IViewer` com `WatchPromptKey`, `IDescribed`).
   - `tapes/` (`TapeInfo.cs` com `Stamp`, `TapeDeck.cs` com carimbo `AUTO DATE` de 5,5 s, `Rewinder.cs`, `ShelfGap.cs`, `tape_screen.gdshader`, `tape_shot.tscn`).
   - `dialogue/` (`DialogueLine.cs`, `DialoguePlayer.cs`, `SubtitleBox.cs`, `subtitle_box.tscn`, `RentalLedger.cs`, `CounterSpot.cs`).
-  - `npc/` (`CustomerNeide.cs`, `dona_neide.tscn`).
-  - `props/tape.tscn`, `ui/PauseMenu.cs`, `vfx/VhsFilter.cs`, `vfx/Puddle.cs`, `localization/ui.csv` (`pt`, `en`, `es`).
-- **Assets gerados (`tools/blender/` → `game/assets/`):** `nondas.glb`, `dona_neide.glb` (+ 4 PNGs de textura), `tape.glb`, `rewinder.glb`, `store/` (glTF separado + 12 PNGs), `facade/` (glTF separado + 11 PNGs) e `audio/` (`speech/neide_01..06.wav`, `speech/nondas_01..06.wav`, `sfx/pen_write.wav`).
+  - `npc/` (`CustomerNeide.cs`, `dona_neide.tscn`, `BarOwnerTiao.cs`, `tiao.tscn`, `DogPacoca.cs`, `pacoca.tscn`).
+  - `props/tape.tscn`, `props/can.tscn`, `ui/PauseMenu.cs`, `vfx/VhsFilter.cs`, `vfx/Puddle.cs`, `localization/ui.csv` (`pt`, `en`, `es`).
+- **Assets gerados (`tools/blender/` → `game/assets/`):** `nondas.glb`, `dona_neide.glb` (+ 4 PNGs), `tiao.glb` (+ 5 PNGs), `pacoca.glb` (+ 1 PNG), `can.glb` (+ 1 PNG), `tape.glb`, `rewinder.glb`, `store/` (glTF separado + 12 PNGs), `facade/` (glTF separado + 11 PNGs), `street/` (glTF separado + 8 PNGs) e `audio/` (`speech/neide_01..06.wav`, `speech/nondas_01..06.wav`, `speech/tiao_01..06.wav`, `sfx/pen_write.wav`, `sfx/pacoca_happy.wav`, `sfx/beer_sip.wav`, `sfx/bar_radio.wav`).
 
 ---
 
-## 3. Próxima Entrega — Entrega 8: A rua e o bar
+## 3. Próxima Entrega — Entrega 9: Noite 1 completa
 
-Referências: `docs/design/03-mvp.md` (Marco 1) e `docs/design/01-story.md` (Noite 1, item 5).
+Referências: `docs/design/03-mvp.md` (Marco 1) e `docs/design/01-story.md` (Noite 1, itens 1–6).
 
 - **Escopo jogável:**
-  - Sair da locadora e atravessar o quarteirão noturno (junho de 1996, quermesse ao longe, bandeirinhas, poste, orelhão na esquina e latas chutáveis) até o **Bar e Lanchonete do Tião** (mesa de sinuca, rádio, cadeiras de plástico na calçada).
-  - Conversar com **Tião** (diálogo + gesto + ruído de fala próprio).
-  - Interagir/fazer carinho no **Paçoca** (cachorro caramelo modelado e animado do zero por script no Blender; nunca sofre dano).
-  - Mecânica de **refúgio**: sentar na cadeira de plástico da calçada e beber cerveja (marca fictícia), vendo da cadeira exatamente o enquadramento da fachada filmado na primeira fita.
+  - Arquitetura de história e persistência: `GameState` (lógica pura em `game/story/` coberta por xUnit em `tests/`), `SaveService` e `LevelLoader` (Autoloads oficiais).
+  - **Noite 1 completa do início ao fim:** bilhete do Seu Agenor (regras da loja e aviso da porta do depósito), atendimento à Dona Neide e ao **Freguês** (devolvendo a fita adulterada), escolha de guardar a fita na gaveta do balcão ou devolver à prateleira, baixar a porta de aço móvel no fim do expediente, passar pelo bar com Tião e **Cabo Moreira** na sinuca, atravessar o portão/corredor lateral até a **quitinete**, jantar, dormir e salvar checkpoint.
 - **Decisões para alinhar com o dono ANTES de codar:**
-  1. Como o jogador passa da loja para a rua nesta entrega antes da missão completa de baixar a porta de aço da Entrega 9 (ex.: porta de aço já aberta/recolhida sem barreira na soleira, ou interação de abrir/fechar a porta).
-  2. Organização de cenas (`street.tscn` separada com transição na soleira ou incorporada a um cenário contínuo loja + rua) e conversão da lata de `test_room.tscn` em prop reutilizável (avaliando variar o giro do chute).
-  3. Validação visual das texturas procedurais de **chapisco** e **caquinho** no bar/muros sob o filtro VHS e inspeção anti-softlock de frestas `>= 3 cm` na calçada/rua; avaliar se a passada do chute (10 cm) e `TouchHeight` da poça precisam descer para 5 cm.
-- **Fora do escopo desta entrega:** Freguês, Cabo Moreira, quitinete/dormir e máquina de missões/`GameState`/`SaveService`/`LevelLoader` (Entrega 9).
-- **Critério de pronto:** com F5, o dono sai à rua, chuta lata até o bar, conversa com Tião, faz carinho no Paçoca, senta na cadeira com cerveja e reconhece o ângulo da primeira fita.
+  1. Organização da transição para a **quitinete** (cena separada via `LevelLoader` ao atravessar o portão do corredor lateral, aproveitando para resolver os itens da seção 4 sobre `Pickable` na mão e `VhsFilter`/`PauseMenu` persistentes).
+  2. Porta de aço móvel da locadora e gaveta do balcão (animação/colisão da porta descendo ao fechar e interação simples de guardar fita na gaveta).
+  3. Ajustes menores anotados pelo dono na Entrega 8 (confirmar se algum entra já na Entrega 9 ou em polimento posterior).
+- **Fora do escopo desta entrega:** Seu Agenor em pessoa, investigação do caderno/durex (Entrega 10), chuva da Noite 3 (Entrega 11) e perseguição do clímax (Entregas 12–13).
+- **Critério de pronto:** jogar a quinta-feira completa do começo ao dormir na quitinete, com troca de cena limpa pelo `LevelLoader`, salvamento em disco (`SaveService`) e suíte `dotnet test` verde em `tests/`.
 
 ---
 

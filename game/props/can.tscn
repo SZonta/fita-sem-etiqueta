@@ -1,0 +1,24 @@
+[gd_scene load_steps=4 format=3]
+
+[ext_resource type="PackedScene" path="res://assets/models/can.glb" id="1_model"]
+
+[sub_resource type="PhysicsMaterial" id="PhysicsMaterial_can"]
+friction = 0.4
+bounce = 0.3
+
+[sub_resource type="CylinderShape3D" id="CylinderShape3D_can"]
+height = 0.122
+radius = 0.033
+
+[node name="Can" type="RigidBody3D"]
+collision_layer = 4
+collision_mask = 5
+mass = 0.02
+physics_material_override = SubResource("PhysicsMaterial_can")
+continuous_cd = true
+angular_damp = 1.0
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="."]
+shape = SubResource("CylinderShape3D_can")
+
+[node name="Model" parent="." instance=ExtResource("1_model")]

@@ -189,8 +189,8 @@ public partial class Interactor : RayCast3D
         _wasWatching = Viewer?.Watching == true;
         if (_wasWatching || wasWatching)
         {
-            // The viewer takes the "interact" action to stop watching.
-            SetPrompt(_wasWatching ? "INTERACT_STOP" : "");
+            // O observador assume a ação "interact" enquanto estiver ativo.
+            SetPrompt(_wasWatching ? (Viewer?.WatchPromptKey ?? "INTERACT_STOP") : "");
             return;
         }
 

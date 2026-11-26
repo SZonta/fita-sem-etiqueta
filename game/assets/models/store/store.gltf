@@ -976,7 +976,7 @@
 		},
 		{
 			"mesh":159,
-			"name":"SteelDoor-convcolonly"
+			"name":"SteelDoorBarrier-convcolonly"
 		},
 		{
 			"mesh":160,
@@ -3831,7 +3831,7 @@
 			]
 		},
 		{
-			"name":"SteelDoor-convcolonly",
+			"name":"SteelDoorBarrier-convcolonly",
 			"primitives":[
 				{
 					"attributes":{

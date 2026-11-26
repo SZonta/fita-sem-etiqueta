@@ -1,4 +1,4 @@
-[gd_scene load_steps=45 format=3]
+[gd_scene load_steps=60 format=3]
 
 [ext_resource type="PackedScene" path="res://assets/models/store/store.gltf" id="1_store"]
 [ext_resource type="Material" path="res://levels/store/floor.tres" id="2_floor"]
@@ -32,6 +32,20 @@
 [ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_04.wav" id="30_nondas4"]
 [ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_05.wav" id="31_nondas5"]
 [ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_06.wav" id="32_nondas6"]
+[ext_resource type="PackedScene" path="res://assets/models/street/street.gltf" id="33_street"]
+[ext_resource type="PackedScene" path="res://props/can.tscn" id="34_can"]
+[ext_resource type="PackedScene" path="res://npc/tiao.tscn" id="35_tiao"]
+[ext_resource type="PackedScene" path="res://npc/pacoca.tscn" id="36_pacoca"]
+[ext_resource type="Script" path="res://interaction/RefugeChair.cs" id="37_refuge_chair"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/tiao_01.wav" id="38_tiao1"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/tiao_02.wav" id="39_tiao2"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/tiao_03.wav" id="40_tiao3"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/tiao_04.wav" id="41_tiao4"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/tiao_05.wav" id="42_tiao5"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/tiao_06.wav" id="43_tiao6"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/pacoca_happy.wav" id="44_pacoca_happy"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/beer_sip.wav" id="45_beer_sip"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/bar_radio.wav" id="46_bar_radio"]
 
 [sub_resource type="Environment" id="Environment_store"]
 background_mode = 1
@@ -64,6 +78,9 @@ size = Vector3(0.34, 0.03, 0.46)
 [sub_resource type="BoxShape3D" id="BoxShape3D_counter_spot"]
 size = Vector3(0.28, 0.06, 0.28)
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_refuge_chair"]
+size = Vector3(0.44, 0.84, 0.46)
+
 [node name="Store" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -80,7 +97,15 @@ cast_shadow = 0
 [node name="SteelDoor" parent="Model"]
 visible = false
 
+[node name="SteelDoorHalf" parent="Model"]
+visible = false
+
+[node name="SteelDoorBarrier" parent="Model"]
+collision_layer = 0
+
 [node name="Facade" parent="." instance=ExtResource("14_facade")]
+
+[node name="Street" parent="." instance=ExtResource("33_street")]
 
 [node name="ReflectionProbe" type="ReflectionProbe" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.45, -3.4)
@@ -142,6 +167,31 @@ light_energy = 5.0
 shadow_enabled = true
 omni_range = 20.0
 omni_attenuation = 1.4
+
+[node name="OppositeStreetLamp" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 9.5, 6.68, 8.8)
+light_color = Color(0.82, 0.9, 1, 1)
+light_energy = 4.5
+omni_range = 22.0
+omni_attenuation = 1.4
+
+[node name="BarPoolLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 2.48, 15)
+light_color = Color(1, 0.85, 0.62, 1)
+light_energy = 2.2
+omni_range = 7.5
+
+[node name="BarCounterLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.8, 2.48, 16.2)
+light_color = Color(1, 0.85, 0.62, 1)
+light_energy = 2.5
+omni_range = 8.0
+
+[node name="BarPorchLight" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, 2.45, 12.1)
+light_color = Color(1, 0.88, 0.68, 1)
+light_energy = 1.6
+omni_range = 7.0
 
 [node name="Signs" type="Node3D" parent="."]
 
@@ -253,6 +303,17 @@ modulate = Color(0.45, 0.05, 0.05, 1)
 text = "SIGN_ADULTS_ONLY"
 font = SubResource("FontVariation_sign")
 font_size = 26
+outline_size = 0
+
+[node name="BarName" type="Label3D" parent="Signs"]
+transform = Transform3D(-1, 0, 0, 0, 1, 0, 0, 0, -1, 3, 2.9, 12.536)
+pixel_size = 0.004
+shaded = true
+alpha_cut = 1
+modulate = Color(0.95, 0.86, 0.55, 1)
+text = "SIGN_BAR_NAME"
+font = SubResource("FontVariation_sign")
+font_size = 76
 outline_size = 0
 
 [node name="RackLabels" type="Node3D" parent="."]
@@ -593,6 +654,58 @@ Player = NodePath("../Player")
 NeideVoice = [ExtResource("21_neide1"), ExtResource("22_neide2"), ExtResource("23_neide3"), ExtResource("24_neide4"), ExtResource("25_neide5"), ExtResource("26_neide6")]
 NondasVoice = [ExtResource("27_nondas1"), ExtResource("28_nondas2"), ExtResource("29_nondas3"), ExtResource("30_nondas4"), ExtResource("31_nondas5"), ExtResource("32_nondas6")]
 
+[node name="Tiao" parent="." node_paths=PackedStringArray("Dialogue", "Player") instance=ExtResource("35_tiao")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.5, -0.03, 17.4)
+Dialogue = NodePath("../DialoguePlayer")
+Player = NodePath("../Player")
+TiaoVoice = [ExtResource("38_tiao1"), ExtResource("39_tiao2"), ExtResource("40_tiao3"), ExtResource("41_tiao4"), ExtResource("42_tiao5"), ExtResource("43_tiao6")]
+NondasVoice = [ExtResource("27_nondas1"), ExtResource("28_nondas2"), ExtResource("29_nondas3"), ExtResource("30_nondas4"), ExtResource("31_nondas5"), ExtResource("32_nondas6")]
+
+[node name="Pacoca" parent="." node_paths=PackedStringArray("Dialogue") instance=ExtResource("36_pacoca")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.15, -0.03, 11.45)
+Dialogue = NodePath("../DialoguePlayer")
+NondasVoice = [ExtResource("27_nondas1"), ExtResource("28_nondas2"), ExtResource("29_nondas3"), ExtResource("30_nondas4"), ExtResource("31_nondas5"), ExtResource("32_nondas6")]
+HappySound = ExtResource("44_pacoca_happy")
+
+[node name="BarRadio" type="AudioStreamPlayer3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.25, 1.45, 18.58)
+stream = ExtResource("46_bar_radio")
+volume_db = -10.0
+unit_size = 2.5
+max_distance = 16.0
+autoplay = true
+
+[node name="RefugeChair" type="StaticBody3D" parent="." node_paths=PackedStringArray("SeatEyes", "LookTarget", "BeerCup")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3.2, -0.03, 11.7)
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("37_refuge_chair")
+SeatEyes = NodePath("SeatEyes")
+LookTarget = NodePath("LookTarget")
+BeerCup = NodePath("../Street/BeerCup")
+SipSound = ExtResource("45_beer_sip")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RefugeChair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.42, 0)
+shape = SubResource("BoxShape3D_refuge_chair")
+
+[node name="SeatEyes" type="Marker3D" parent="RefugeChair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.51, 0)
+
+[node name="LookTarget" type="Marker3D" parent="RefugeChair"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -0.2, 2.23, -11.5)
+
+[node name="StreetCans" type="Node3D" parent="."]
+
+[node name="Can1" parent="StreetCans" instance=ExtResource("34_can")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 1.4, 0.031, 1.85)
+
+[node name="Can2" parent="StreetCans" instance=ExtResource("34_can")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.85, 0.031, 10.65)
+
+[node name="Can3" parent="StreetCans" instance=ExtResource("34_can")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -7.2, 0.031, 11.1)
+
 [node name="Player" parent="." instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 0, -1)
 
@@ -601,3 +714,4 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 0, -1)
 [node name="PauseMenu" parent="." instance=ExtResource("5_pause_menu")]
 
 [editable path="Model"]
+[editable path="Street"]

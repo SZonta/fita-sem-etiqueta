@@ -84,3 +84,16 @@ N1_NEIDE_REMIND_LEDGER,Essa mesma! Só anota no caderno pro Seu Agenor não recl
 N1_NEIDE_THANKS,"Obrigada, filho. Viu quanta gente de fora veio pra quermesse?","Thank you, dear. Seen how many outsiders came for the fair?","Gracias, hijo. ¿Viste cuánta gente de afuera vino por la kermés?"
 N1_NEIDE_GOSSIP,"Mas esquisito mesmo anda o Seu Agenor, sempre trancado nesse depósito.","Though the odd one lately is Seu Agenor, always locked in that back room.","Aunque el que anda raro es Seu Agenor, siempre encerrado en ese depósito."
 N1_NONDAS_BYE,"Bom filme, Dona Neide. Cuidado com o sereno.","Enjoy the movie, Dona Neide. Stay warm out there.","Buena película, Dona Neide. Cuidado con el sereno."
+SIGN_BAR_NAME,BAR DO TIÃO,TIÃO'S BAR,BAR DE TIÃO
+INTERACT_TALK_TIAO,[E] Falar com Tião,[E] Talk to Tião,[E] Hablar con Tião
+INTERACT_PET_PACOCA,[E] Fazer carinho no Paçoca,[E] Pet Paçoca,[E] Acariciar a Paçoca
+INTERACT_SIT,[E] Sentar,[E] Sit down,[E] Sentarse
+INTERACT_DRINK_OR_STAND,[E] Beber cerveja   [WASD] Levantar,[E] Drink beer   [WASD] Stand up,[E] Tomar cerveza   [WASD] Levantarse
+SPEAKER_TIAO,Tião,Tião,Tião
+N1_TIAO_HELLO,"E aí, Nondas! Fechou a locadora mais cedo hoje?","Hey there, Nondas! Closed the shop early tonight?","¡Qué tal, Nondas! ¿Cerraste el videoclub temprano hoy?"
+N1_NONDAS_BAR_1,"Dei uma passada, Seu Tião. Que movimento na rua, né?","Just stepped out, Seu Tião. Pretty lively street tonight, huh?","Salí un rato, Seu Tião. Qué movimiento hay en la calle, ¿no?"
+N1_TIAO_STRANGER,"É a quermesse! Até um sujeito calado passou aqui antes — deve ser vendedor, viajante.","It's the church fair! Even a quiet fella stopped by earlier — must be a traveling salesman.","¡Es la kermés! Hasta un tipo callado pasó por acá antes; debe ser vendedor, viajante."
+N1_TIAO_INVITE,"Senta aí fora com o Paçoca, toma uma cerveja gelada e esfria a cabeça.","Grab a seat outside with Paçoca, have a cold beer and unwind.","Siéntate afuera con Paçoca, tómate una cerveza fría y despéjate."
+N1_NONDAS_BAR_2,"Valeu, Seu Tião.","Thanks, Seu Tião.","Gracias, Seu Tião."
+N1_TIAO_AGAIN,"A cerveja tá ali na mesa da calçada, Nondas. Fica à vontade.","Your beer's right there on the sidewalk table, Nondas. Make yourself at home.","La cerveza está ahí en la mesa de la acera, Nondas. Estás en tu casa."
+N1_NONDAS_PET_PACOCA,"Ô garoto, tá frio aqui fora hoje, né?","Hey boy, chilly out here tonight, isn't it?","Che campeón, hace fresco acá afuera hoy, ¿no?"
