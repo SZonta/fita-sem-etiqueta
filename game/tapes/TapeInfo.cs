@@ -18,6 +18,9 @@ public partial class TapeInfo : Node, IDescribed
     /// <summary>End credits, as translation keys: a role, then the name, and so on.</summary>
     [Export] public string[] Credits { get; set; } = [];
 
+    /// <summary>Chaves de tradução das linhas do carimbo gravado no vídeo caseiro (ex.: hora e data).</summary>
+    [Export] public string[] Stamp { get; set; } = [];
+
     /// <summary>True for a tape someone recorded over after the credits.</summary>
     [Export] public bool Tampered { get; set; }
 
@@ -28,7 +31,7 @@ public partial class TapeInfo : Node, IDescribed
     /// True once played to the end in the store's VCR. Only a tested tape may be rewound: rewound first,
     /// what was recorded after the credits would never be seen.
     /// </summary>
-    public bool Tested { get; set; }
+    [Export] public bool Tested { get; set; }
 
     public string Caption => string.Format(Tr("TAPE_CAPTION"), Tr(TitleKey), Tr(GenreKey));
 

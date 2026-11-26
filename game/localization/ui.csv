@@ -46,3 +46,41 @@ CREDITS_NAME_COMEDY_3,Toninho Arruda,Toninho Arruda,Toninho Arruda
 SIGN_STORE_NAME,ASTRO VÍDEO,ASTRO VÍDEO,ASTRO VÍDEO
 TAPE_TEST_FIRST,Teste antes,Test it first,Pruébala antes
 TAPE_CAPTION,{0} ({1}),{0} ({1}),{0} ({1})
+TAPE_STAMP_N1_TIME,22:48,22:48,22:48
+TAPE_STAMP_N1_DATE,12. 06. 96,12. 06. 96,12. 06. 96
+SETTINGS_LANGUAGE,Idioma,Language,Idioma
+LANGUAGE_PT,Português,Português,Português
+LANGUAGE_EN,English,English,English
+LANGUAGE_ES,Español,Español,Español
+SETTINGS_SUBTITLE_SIZE,Tamanho da legenda,Subtitle size,Tamaño de subtítulos
+SUBTITLE_SIZE_SMALL,Pequena,Small,Pequeño
+SUBTITLE_SIZE_MEDIUM,Média,Medium,Mediano
+SUBTITLE_SIZE_LARGE,Grande,Large,Grande
+TAPE_TITLE_ROMANCE_1,Cartas Antes do Outono,Letters Before Autumn,Cartas antes del otoño
+TAPE_TITLE_ROMANCE_2,Duas Passagens para Verona,Two Tickets to Verona,Dos pasajes a Verona
+TAPE_TITLE_ROMANCE_3,Promessa na Estação,Promise at the Station,Promesa en la estación
+CREDITS_NAME_ROMANCE_1,Celina Borges,Celina Borges,Celina Borges
+CREDITS_NAME_ROMANCE_2,Hélio Siqueira,Hélio Siqueira,Hélio Siqueira
+CREDITS_NAME_ROMANCE_3,Lúcia Camargo,Lúcia Camargo,Lúcia Camargo
+CREDITS_NAME_ROMANCE_4,Renato Valente,Renato Valente,Renato Valente
+CREDITS_NAME_ROMANCE_5,Mário Peixoto,Mário Peixoto,Mário Peixoto
+CREDITS_NAME_ROMANCE_6,Clarice Moura,Clarice Moura,Clarice Moura
+CREDITS_NAME_ROMANCE_7,Otávio Ribeiro,Otávio Ribeiro,Otávio Ribeiro
+CREDITS_NAME_ROMANCE_8,Sílvia Prado,Sílvia Prado,Sílvia Prado
+CREDITS_NAME_ROMANCE_9,Nélson Gusmão,Nélson Gusmão,Nélson Gusmão
+INTERACT_TALK_NEIDE,[E] Falar com Dona Neide,[E] Talk to Dona Neide,[E] Hablar con Dona Neide
+INTERACT_LOG_RENTAL,[E] Anotar locação,[E] Log rental,[E] Anotar alquiler
+INTERACT_HAND_OVER,[E] Entregar fita,[E] Hand over tape,[E] Entregar cinta
+COUNTER_WRONG_TAPE,Não foi essa que ela pediu,That's not the one she asked for,No es la que pidió
+LEDGER_PAGE_HEADER,FICHA   FILME,CARD    FILM,FICHA   PELÍCULA
+LEDGER_ENTRY_NEIDE,014     Cartas Antes do Outono,014     Letters Before Autumn,014     Cartas antes del otoño
+SPEAKER_NEIDE,Dona Neide,Dona Neide,Dona Neide
+SPEAKER_NONDAS,Nondas,Nondas,Nondas
+N1_NEIDE_HELLO,"Boa noite, Nondas! Que friozinho de São João, hein?","Good evening, Nondas! Quite a chilly June night, huh?","¡Buenas noches, Nondas! Qué fresquito de junio, ¿no?"
+N1_NONDAS_HELLO,"Boa noite, Dona Neide. Vai levar um romance hoje?","Good evening, Dona Neide. Taking a romance tonight?","Buenas noches, Dona Neide. ¿Se lleva un romance hoy?"
+N1_NEIDE_REQUEST,Isso! Vê pra mim Cartas Antes do Outono e já marca na minha ficha.,Yes! Grab Letters Before Autumn for me and put it on my tab.,¡Sí! Búscame Cartas antes del otoño y anótalo en mi ficha.
+N1_NEIDE_REMIND_TAPE,"É Cartas Antes do Outono, filho. Fica na estante de Romance.","It's Letters Before Autumn, dear. On the Romance shelf.","Es Cartas antes del otoño, hijo. Está en el estante de Romance."
+N1_NEIDE_REMIND_LEDGER,Essa mesma! Só anota no caderno pro Seu Agenor não reclamar.,That's the one! Just log it in the book so Seu Agenor won't complain.,¡Esa misma! Solo anótalo en el cuaderno para que Seu Agenor no se queje.
+N1_NEIDE_THANKS,"Obrigada, filho. Viu quanta gente de fora veio pra quermesse?","Thank you, dear. Seen how many outsiders came for the fair?","Gracias, hijo. ¿Viste cuánta gente de afuera vino por la kermés?"
+N1_NEIDE_GOSSIP,"Mas esquisito mesmo anda o Seu Agenor, sempre trancado nesse depósito.","Though the odd one lately is Seu Agenor, always locked in that back room.","Aunque el que anda raro es Seu Agenor, siempre encerrado en ese depósito."
+N1_NONDAS_BYE,"Bom filme, Dona Neide. Cuidado com o sereno.","Enjoy the movie, Dona Neide. Stay warm out there.","Buena película, Dona Neide. Cuidado con el sereno."

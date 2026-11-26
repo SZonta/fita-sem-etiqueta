@@ -1,4 +1,4 @@
-[gd_scene load_steps=25 format=3]
+[gd_scene load_steps=45 format=3]
 
 [ext_resource type="PackedScene" path="res://assets/models/store/store.gltf" id="1_store"]
 [ext_resource type="Material" path="res://levels/store/floor.tres" id="2_floor"]
@@ -13,9 +13,29 @@
 [ext_resource type="Shader" path="res://tapes/tape_screen.gdshader" id="11_screen"]
 [ext_resource type="PackedScene" path="res://tapes/tape_shot.tscn" id="12_shot"]
 [ext_resource type="PackedScene" path="res://assets/models/rewinder.glb" id="13_rewinder"]
+[ext_resource type="PackedScene" path="res://assets/models/facade/facade.gltf" id="14_facade"]
+[ext_resource type="PackedScene" path="res://dialogue/subtitle_box.tscn" id="15_subtitle_box"]
+[ext_resource type="Script" path="res://dialogue/DialoguePlayer.cs" id="16_dialogue_player"]
+[ext_resource type="Script" path="res://dialogue/RentalLedger.cs" id="17_rental_ledger"]
+[ext_resource type="Script" path="res://dialogue/CounterSpot.cs" id="18_counter_spot"]
+[ext_resource type="PackedScene" path="res://npc/dona_neide.tscn" id="19_dona_neide"]
+[ext_resource type="AudioStream" path="res://assets/audio/sfx/pen_write.wav" id="20_pen"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/neide_01.wav" id="21_neide1"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/neide_02.wav" id="22_neide2"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/neide_03.wav" id="23_neide3"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/neide_04.wav" id="24_neide4"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/neide_05.wav" id="25_neide5"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/neide_06.wav" id="26_neide6"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_01.wav" id="27_nondas1"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_02.wav" id="28_nondas2"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_03.wav" id="29_nondas3"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_04.wav" id="30_nondas4"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_05.wav" id="31_nondas5"]
+[ext_resource type="AudioStream" path="res://assets/audio/speech/nondas_06.wav" id="32_nondas6"]
 
 [sub_resource type="Environment" id="Environment_store"]
 background_mode = 1
+background_color = Color(0.012, 0.014, 0.022, 1)
 ambient_light_source = 2
 ambient_light_color = Color(1, 0.98, 0.92, 1)
 ambient_light_energy = 0.3
@@ -38,6 +58,12 @@ shader = ExtResource("11_screen")
 [sub_resource type="FontVariation" id="FontVariation_sign"]
 variation_embolden = 0.6
 
+[sub_resource type="BoxShape3D" id="BoxShape3D_ledger"]
+size = Vector3(0.34, 0.03, 0.46)
+
+[sub_resource type="BoxShape3D" id="BoxShape3D_counter_spot"]
+size = Vector3(0.28, 0.06, 0.28)
+
 [node name="Store" type="Node3D"]
 
 [node name="WorldEnvironment" type="WorldEnvironment" parent="."]
@@ -50,6 +76,11 @@ surface_material_override/0 = ExtResource("2_floor")
 
 [node name="LightFixtures" parent="Model"]
 cast_shadow = 0
+
+[node name="SteelDoor" parent="Model"]
+visible = false
+
+[node name="Facade" parent="." instance=ExtResource("14_facade")]
 
 [node name="ReflectionProbe" type="ReflectionProbe" parent="."]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 3, 1.45, -3.4)
@@ -103,6 +134,14 @@ light_color = Color(0.93, 0.97, 1, 1)
 light_energy = 0.8
 shadow_enabled = true
 omni_range = 3.5
+
+[node name="StreetLamp" type="OmniLight3D" parent="Lights"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, -1.2, 6.78, 3.9)
+light_color = Color(0.82, 0.9, 1, 1)
+light_energy = 5.0
+shadow_enabled = true
+omni_range = 20.0
+omni_attenuation = 1.4
 
 [node name="Signs" type="Node3D" parent="."]
 
@@ -355,7 +394,46 @@ script = ExtResource("7_tape_info")
 TitleKey = "TAPE_TITLE_COMEDY"
 GenreKey = "SIGN_GENRE_COMEDY"
 Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_COMEDY_1", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_COMEDY_2", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_COMEDY_3")
+Stamp = PackedStringArray("TAPE_STAMP_N1_TIME", "TAPE_STAMP_N1_DATE")
 Tampered = true
+
+[node name="RomanceTapes" type="Node3D" parent="."]
+
+[node name="Tape1" parent="RomanceTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.7575, 0.676, -1.56925)
+freeze = true
+
+[node name="TapeInfo" type="Node" parent="RomanceTapes/Tape1"]
+script = ExtResource("7_tape_info")
+TitleKey = "TAPE_TITLE_ROMANCE_1"
+GenreKey = "SIGN_GENRE_ROMANCE"
+Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_ROMANCE_1", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_ROMANCE_2", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_ROMANCE_3")
+Rewound = true
+Tested = true
+
+[node name="Tape2" parent="RomanceTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.7575, 0.676, -1.64875)
+freeze = true
+
+[node name="TapeInfo" type="Node" parent="RomanceTapes/Tape2"]
+script = ExtResource("7_tape_info")
+TitleKey = "TAPE_TITLE_ROMANCE_2"
+GenreKey = "SIGN_GENRE_ROMANCE"
+Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_ROMANCE_4", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_ROMANCE_5", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_ROMANCE_6")
+Rewound = true
+Tested = true
+
+[node name="Tape3" parent="RomanceTapes" instance=ExtResource("6_tape")]
+transform = Transform3D(0, -1, 0, 1, 0, 0, 0, 0, 1, 5.7575, 0.676, -1.72825)
+freeze = true
+
+[node name="TapeInfo" type="Node" parent="RomanceTapes/Tape3"]
+script = ExtResource("7_tape_info")
+TitleKey = "TAPE_TITLE_ROMANCE_3"
+GenreKey = "SIGN_GENRE_ROMANCE"
+Credits = PackedStringArray("CREDITS_ROLE_DIRECTOR", "CREDITS_NAME_ROMANCE_7", "CREDITS_ROLE_PHOTOGRAPHY", "CREDITS_NAME_ROMANCE_8", "CREDITS_ROLE_MUSIC", "CREDITS_NAME_ROMANCE_9")
+Rewound = true
+Tested = true
 
 [node name="ShelfGaps" type="Node3D" parent="."]
 
@@ -408,6 +486,19 @@ GenreKey = "SIGN_GENRE_COMEDY"
 Length = 0.2385
 
 [node name="CollisionShape3D" type="CollisionShape3D" parent="ShelfGaps/Comedy"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.095, -0.11925)
+shape = SubResource("BoxShape3D_gap_b")
+
+[node name="Romance" type="Area3D" parent="ShelfGaps"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 5.7, 0.58, -1.5295)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("8_shelf_gap")
+GenreKey = "SIGN_GENRE_ROMANCE"
+Length = 0.2385
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="ShelfGaps/Romance"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0.05, 0.095, -0.11925)
 shape = SubResource("BoxShape3D_gap_b")
 
@@ -464,6 +555,43 @@ transform = Transform3D(0, 0, 1, 0, 1, 0, -1, 0, 0, 0, 0, 0)
 [node name="CollisionShape3D" type="CollisionShape3D" parent="Rewinder"]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.045, 0)
 shape = SubResource("BoxShape3D_rewinder")
+
+[node name="RentalLedger" type="StaticBody3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.3, 1.005, -2.53)
+collision_layer = 1
+collision_mask = 0
+script = ExtResource("17_rental_ledger")
+PenSound = ExtResource("20_pen")
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="RentalLedger"]
+shape = SubResource("BoxShape3D_ledger")
+
+[node name="CounterSpot" type="Area3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 4.36, 1, -2.02)
+collision_layer = 16
+collision_mask = 0
+monitoring = false
+script = ExtResource("18_counter_spot")
+ExpectedTitleKey = "TAPE_TITLE_ROMANCE_1"
+
+[node name="CollisionShape3D" type="CollisionShape3D" parent="CounterSpot"]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.03, 0)
+shape = SubResource("BoxShape3D_counter_spot")
+
+[node name="SubtitleBox" parent="." instance=ExtResource("15_subtitle_box")]
+
+[node name="DialoguePlayer" type="Node" parent="." node_paths=PackedStringArray("Subtitles")]
+script = ExtResource("16_dialogue_player")
+Subtitles = NodePath("../SubtitleBox")
+
+[node name="DonaNeide" parent="." node_paths=PackedStringArray("Dialogue", "Ledger", "Counter", "Player") instance=ExtResource("19_dona_neide")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 7.2, -0.03, 1.15)
+Dialogue = NodePath("../DialoguePlayer")
+Ledger = NodePath("../RentalLedger")
+Counter = NodePath("../CounterSpot")
+Player = NodePath("../Player")
+NeideVoice = [ExtResource("21_neide1"), ExtResource("22_neide2"), ExtResource("23_neide3"), ExtResource("24_neide4"), ExtResource("25_neide5"), ExtResource("26_neide6")]
+NondasVoice = [ExtResource("27_nondas1"), ExtResource("28_nondas2"), ExtResource("29_nondas3"), ExtResource("30_nondas4"), ExtResource("31_nondas5"), ExtResource("32_nondas6")]
 
 [node name="Player" parent="." instance=ExtResource("3_player")]
 transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 2.8, 0, -1)

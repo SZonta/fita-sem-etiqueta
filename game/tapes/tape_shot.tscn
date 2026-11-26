@@ -21,6 +21,9 @@ variation_embolden = 0.8
 [node name="SteelDoor" parent="Store"]
 visible = false
 
+[node name="SteelDoorHalf" parent="Store"]
+visible = false
+
 [node name="Facade" parent="." instance=ExtResource("2_facade")]
 
 [node name="SignText" type="Label3D" parent="."]

@@ -231,6 +231,7 @@ public partial class Interactor : RayCast3D
         string action = Tr("INTERACT_DROP");
         bool drop = true;
         Transform3D? spot = null;
+        IInteractable? usable = null;
         (IReceiver? receiver, Vector3 aimedAt) = AimedReceiver();
         if (receiver != null)
         {
@@ -256,6 +257,16 @@ public partial class Interactor : RayCast3D
                 drop = false;
             }
         }
+        else
+        {
+            IInteractable? aimed = Aimed();
+            if (aimed?.WorksWhileHolding == true && aimed.PromptKey != "")
+            {
+                usable = aimed;
+                action = Tr(aimed.PromptKey);
+                drop = false;
+            }
+        }
 
         string caption = item.Caption;
         SetPrompt(caption == "" || action == "" ? caption + action : caption + "\n" + action);
@@ -267,6 +278,10 @@ public partial class Interactor : RayCast3D
         if (spot is Transform3D target)
         {
             Put(receiver!, target);
+        }
+        else if (usable != null)
+        {
+            usable.Interact(this);
         }
         else if (drop)
         {

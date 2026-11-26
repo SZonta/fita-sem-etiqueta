@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using FitaSemEtiqueta.Core;
 using FitaSemEtiqueta.Interaction;
 using Godot;
 
@@ -38,6 +39,9 @@ public partial class TapeDeck : Area3D, IReceiver
     // Seconds for the tape to slide in or out.
     private const float SlideTime = 0.35f;
 
+    // Duração do carimbo AUTO DATE no início da gravação caseira, segundos.
+    private const float StampTime = 5.5f;
+
     // The tape, lying flat in the slot: length (X) across, spine (+Y) out towards the attendant, thin side up.
     // Out: pushed out by the VCR, most of it outside. In: all inside.
     private static readonly Basis Lying = new(new Vector3(0, 0, -1), new Vector3(-1, 0, 0), new Vector3(0, 1, 0));
@@ -62,6 +66,8 @@ public partial class TapeDeck : Area3D, IReceiver
     private Control _roll = null!;
     private Label _end = null!;
     private Label _title = null!;
+    private Label _stamp = null!;
+    private string[] _stampKeys = [];
 
     public override void _Ready()
     {
@@ -73,8 +79,29 @@ public partial class TapeDeck : Area3D, IReceiver
         _title.Position = new Vector2(0, 120 - _title.Size.Y / 2);
         Card.AddChild(_roll);
         Card.AddChild(_title);
+
+        // O carimbo fica direto no SubViewport para aparecer sobre o vídeo 3D e passar pelo shader da TV.
+        _stamp = BuildStampLabel();
+        Feed.AddChild(_stamp);
+
         ScreenMaterial.SetShaderParameter("picture", Feed.GetTexture());
         Feed.RenderTargetUpdateMode = SubViewport.UpdateMode.Disabled;
+    }
+
+    public override void _EnterTree()
+    {
+        if (Settings.Instance != null)
+        {
+            Settings.Instance.Changed += RefreshStampText;
+        }
+    }
+
+    public override void _ExitTree()
+    {
+        if (Settings.Instance != null)
+        {
+            Settings.Instance.Changed -= RefreshStampText;
+        }
     }
 
     public bool Accepts(Pickable item, out string hint)
@@ -181,6 +208,9 @@ public partial class TapeDeck : Area3D, IReceiver
 
         BuildCredits(tape);
         _title.Text = tape.TitleKey;
+        _stampKeys = tape.Stamp;
+        RefreshStampText();
+        _stamp.Visible = false;
         Screen.MaterialOverride = ScreenMaterial;
         _state = State.Playing;
         _clock = 0;
@@ -227,6 +257,7 @@ public partial class TapeDeck : Area3D, IReceiver
         Card.Visible = part != Part.Shot;
         _roll.Visible = part == Part.Credits;
         _title.Visible = part == Part.Title;
+        _stamp.Visible = part == Part.Shot && t < StampTime && _stamp.Text.Length > 0;
 
         if (part == Part.Credits)
         {
@@ -314,5 +345,38 @@ public partial class TapeDeck : Area3D, IReceiver
         label.AddThemeFontSizeOverride("font_size", size);
         label.AddThemeColorOverride("font_color", new Color(0.92f, 0.92f, 0.9f));
         return label;
+    }
+
+    private static Label BuildStampLabel()
+    {
+        // Posicionado dentro da margem segura do overscan e acima da faixa de head switching na base.
+        var label = new Label
+        {
+            Position = new Vector2(16, 178),
+            Size = new Vector2(284, 40),
+            HorizontalAlignment = HorizontalAlignment.Right,
+            VerticalAlignment = VerticalAlignment.Bottom,
+            Visible = false,
+        };
+        label.AddThemeFontSizeOverride("font_size", 13);
+        label.AddThemeColorOverride("font_color", new Color(0.96f, 0.95f, 0.86f));
+        label.AddThemeColorOverride("font_outline_color", new Color(0.05f, 0.05f, 0.05f, 0.9f));
+        label.AddThemeConstantOverride("outline_size", 4);
+        return label;
+    }
+
+    private void RefreshStampText()
+    {
+        if (_stampKeys.Length == 0)
+        {
+            _stamp.Text = "";
+            return;
+        }
+        var lines = new string[_stampKeys.Length];
+        for (int i = 0; i < _stampKeys.Length; i++)
+        {
+            lines[i] = Tr(_stampKeys[i]);
+        }
+        _stamp.Text = string.Join("\n", lines);
     }
 }
